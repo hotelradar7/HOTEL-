@@ -530,3 +530,17 @@ window.addEventListener("unhandledrejection", n => {
   showErrorPopup(n.reason ? n.reason.message || String(n.reason) : "Unhandled rejection");
   n.preventDefault();
 });const uv=document.getElementById("root");uv&&L1.createRoot(uv).render(l.jsx(Jw,{children:l.jsx($w,{})}));
+
+/* HR MOTION LOADER — auto-injects animation files, index.html stays untouched */
+(function () {
+  if (window.__hrMotionLoaderDone) return;
+  window.__hrMotionLoaderDone = true;
+  var css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "hotelradar-motion.css";
+  (document.head || document.documentElement).appendChild(css);
+  var js = document.createElement("script");
+  js.src = "hotelradar-motion.js";
+  if (document.body) { document.body.appendChild(js); }
+  else { document.addEventListener("DOMContentLoaded", function () { document.body.appendChild(js); }); }
+})();
