@@ -1,292 +1,979 @@
 /* ============================================================
-   HOTELRADAR MOTION SYSTEM v3 — MEGA (append to app.css end)
+   HOTELRADAR MOTION — Animation System
+   Works across all 4 themes: default / night / emerald / indigo
+   position:fixed ambient layer is z-index:-1, pointer-events:none
+   Respects prefers-reduced-motion
    ============================================================ */
-:root {
-  --m-ease: cubic-bezier(.22, 1, .36, 1);
-  --m-spring: cubic-bezier(.34, 1.56, .64, 1);
-}
 
-/* ---------- AMBIENT LAYER ---------- */
-.hr-ambient { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.hr-ambient::before {
-  content: ""; position: absolute; inset: -60px;
-  background-image: radial-gradient(var(--line) 1px, transparent 1.4px);
-  background-size: 26px 26px; opacity: .55;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 25%, transparent 78%);
-          mask-image: radial-gradient(120% 90% at 50% 0%, #000 25%, transparent 78%);
-  animation: hr-grid 42s linear infinite;
-}
-@keyframes hr-grid { to { transform: translate3d(26px, 26px, 0); } }
-
-.hr-radar {
-  position: absolute; width: 135vmax; height: 135vmax;
-  top: -62vmax; right: -58vmax; border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0deg 296deg,
-    color-mix(in oklab, var(--accent) 12%, transparent) 330deg,
-    color-mix(in oklab, var(--accent) 32%, transparent) 359deg, transparent 360deg);
-  translate: calc(var(--px, 0) * 16px) calc(var(--py, 0) * 12px);
-  animation: hr-sweep 9s linear infinite; opacity: .5; filter: blur(1.5px);
-}
-.hr-radar::after {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  background: repeating-radial-gradient(circle at center, transparent 0 88px,
-    color-mix(in oklab, var(--accent) 8%, transparent) 88px 89.5px);
-}
-@keyframes hr-sweep { to { transform: rotate(360deg); } }
-
-.hr-glow {
-  position: absolute; width: 46vmax; height: 46vmax; border-radius: 50%;
-  left: -14vmax; bottom: -18vmax; filter: blur(70px);
-  background: color-mix(in oklab, var(--accent) 15%, transparent);
-  translate: calc(var(--px, 0) * -10px) calc(var(--py, 0) * -8px);
-  animation: hr-breathe 7s ease-in-out infinite alternate;
-}
-@keyframes hr-breathe { from { opacity: .22; scale: .92; } to { opacity: .55; scale: 1.12; } }
-
-.hr-ping { position: absolute; width: 14px; height: 14px; }
-.hr-ping::before, .hr-ping::after {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  border: 2px solid color-mix(in oklab, var(--accent) 55%, transparent);
-  animation: hr-ping 3.4s var(--m-ease) infinite; animation-delay: var(--dl, 0s);
-}
-.hr-ping::after { animation-delay: calc(var(--dl, 0s) + 1.7s); }
-.hr-ping i { position: absolute; inset: 4px; border-radius: 50%; background: var(--accent); opacity: .7; animation: hr-dot 3.4s ease-in-out infinite; }
-@keyframes hr-ping { 0% { transform: scale(.4); opacity: .9; } 80%, 100% { transform: scale(7); opacity: 0; } }
-@keyframes hr-dot { 0%, 100% { scale: 1; } 50% { scale: 1.5; } }
-
-.hr-float { position: absolute; font-size: var(--fs, 22px); opacity: .13; filter: saturate(.85); animation: hr-bob var(--d, 9s) ease-in-out var(--dl, 0s) infinite alternate; }
-@keyframes hr-bob { from { transform: translateY(-14px) rotate(-7deg); } to { transform: translateY(16px) rotate(8deg); } }
-
-.hr-spot {
-  position: absolute; width: 44rem; height: 44rem; border-radius: 50%; left: 0; top: 0; filter: blur(60px);
-  translate: calc(var(--mx, 50vw) - 22rem) calc(var(--my, 30vh) - 22rem);
-  background: radial-gradient(circle, color-mix(in oklab, var(--accent) 7%, transparent), transparent 65%);
-  transition: translate .35s var(--m-ease);
-}
-
-/* NEW: comets + fireflies */
-.hr-comet {
-  position: absolute; left: -12vw; width: 110px; height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 80%, #fff));
-  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 70%, transparent));
-  transform: rotate(-24deg); opacity: 0;
-  animation: hr-comet 3s ease-in forwards;
-}
-@keyframes hr-comet { 0% { translate: 0 0; opacity: 0; } 8% { opacity: .9; } 100% { translate: 125vw 55vh; opacity: 0; } }
-
-.hr-fly {
-  position: absolute; bottom: -2vh; width: 5px; height: 5px; border-radius: 50%;
-  background: color-mix(in oklab, var(--accent) 85%, #fff);
-  box-shadow: 0 0 8px 2px color-mix(in oklab, var(--accent) 45%, transparent);
-  opacity: 0; animation: hr-fly var(--d, 14s) linear var(--dl, 0s) infinite;
-}
-@keyframes hr-fly {
-  0% { translate: 0 0; opacity: 0; } 10% { opacity: .8; }
-  50% { translate: 4vw -45vh; opacity: .5; } 90% { opacity: .7; }
-  100% { translate: -3vw -92vh; opacity: 0; }
-}
-
-/* ---------- SCROLL PROGRESS ---------- */
-.hr-progress {
-  position: fixed; top: 0; left: 0; z-index: 70; height: 3px; width: 100%;
-  transform-origin: 0 50%; transform: scaleX(0);
+/* ── SCROLL PROGRESS BAR ───────────────────────────────────── */
+#hr-scroll-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
   background: linear-gradient(90deg, var(--accent), var(--good));
-  box-shadow: 0 0 10px color-mix(in oklab, var(--accent) 60%, transparent);
+  z-index: 9999;
+  pointer-events: none;
+  transition: width 0.1s linear;
+  border-radius: 0 3px 3px 0;
 }
 
-/* ---------- LIVE TICKER ---------- */
-.hr-ticker { position: relative; z-index: 40; display: flex; align-items: center; height: 32px; overflow: hidden; background: var(--ink); color: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: .02em; }
-.hr-live { position: absolute; left: 0; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 0 16px 0 12px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .14em; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
-.hr-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: hr-blink 1.1s steps(2) infinite; }
-@keyframes hr-blink { 50% { opacity: .15; } }
-.hr-ticker-viewport { flex: 1; overflow: hidden; padding-left: 96px; }
-.hr-ticker-track { display: flex; width: max-content; will-change: transform; animation: hr-marquee 34s linear infinite; }
-.hr-ticker:hover .hr-ticker-track { animation-play-state: paused; }
-.hr-ticker-group { display: flex; align-items: center; }
-.hr-ticker-item { display: inline-flex; align-items: center; white-space: nowrap; padding: 0 14px; }
-.hr-ticker-item b { font-weight: 700; color: color-mix(in oklab, var(--accent) 75%, var(--paper)); }
-.hr-ticker-sep { opacity: .35; font-size: 9px; }
-@keyframes hr-marquee { to { transform: translateX(-50%); } }
-
-/* ---------- HEADER ---------- */
-header.m-scrolled { box-shadow: var(--sh-2) !important; }
-.m-logo { position: relative; }
-.m-logo::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; border: 2px solid transparent; border-top-color: color-mix(in oklab, var(--accent) 85%, transparent); animation: hr-spin 3s linear infinite; opacity: .75; }
-@keyframes hr-spin { to { rotate: 360deg; } }
-header .animate-pulse { position: relative; }
-header .animate-pulse::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid var(--accent); animation: hr-ping-sm 2s var(--m-ease) infinite; }
-@keyframes hr-ping-sm { 0% { transform: scale(.7); opacity: .9; } 70%, 100% { transform: scale(2.1); opacity: 0; } }
-header button[class*="bg-[var(--accent)]"] { position: relative; overflow: hidden; }
-header button[class*="bg-[var(--accent)]"]::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%); transform: translateX(-140%); animation: hr-shine 3.2s ease-in-out infinite; }
-@keyframes hr-shine { 0%, 55% { transform: translateX(-140%); } 88%, 100% { transform: translateX(140%); } }
-header button svg, header a svg { transition: transform .25s var(--m-spring); }
-header button:hover svg, header a:hover svg { transform: scale(1.15) rotate(-6deg); }
-/* NEW: heartbeat on wishlist hearts */
-header a[href="wishlist.html"] svg, footer .lucide-heart { animation: hr-heartbeat 2.6s ease-in-out infinite; transform-origin: center; }
-@keyframes hr-heartbeat { 0%, 100% { scale: 1; } 14% { scale: 1.3; } 28% { scale: 1; } 42% { scale: 1.22; } 56% { scale: 1; } }
-
-/* ---------- PAGE / MODAL / DRAWER ---------- */
-main.m-page-in { animation: hr-page .45s var(--m-ease) both; }
-@keyframes hr-page { from { opacity: .3; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-.animate-fade-in { animation: fadeIn .22s ease-out forwards, hr-pop .34s var(--m-spring) both; }
-@keyframes hr-pop { from { scale: .982; } to { scale: 1; } }
-.animate-slide-left nav a, .animate-slide-left nav button { animation: hr-item .4s var(--m-ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
-@keyframes hr-item { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
-/* NEW: drawer active link shimmer + theme swatch pulse */
-.animate-slide-left a[class*="bg-[var(--accent-dim)]"] { position: relative; overflow: hidden; }
-.animate-slide-left a[class*="bg-[var(--accent-dim)]"]::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, color-mix(in oklab, var(--accent) 16%, transparent) 50%, transparent 70%); transform: translateX(-140%); animation: hr-shine 3s ease-in-out infinite; }
-.animate-slide-left button[class*="border-[var(--accent)]"][class*="bg-[var(--accent-dim)]"] { animation: hr-swatch 2.4s ease-in-out infinite; }
-@keyframes hr-swatch { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 40%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
-/* NEW: toast spring + sheet handle wiggle */
-.animate-toast { animation: toast .18s ease-out forwards, hr-tpop .34s var(--m-spring) both; }
-@keyframes hr-tpop { from { scale: .88; } to { scale: 1; } }
-.bottom-sheet > div:first-child { animation: hr-handle 1s ease-in-out .4s 2 both; }
-@keyframes hr-handle { 0%, 100% { translate: 0 0; } 30% { translate: -7px 0; } 70% { translate: 7px 0; } }
-/* NEW: FAQ answer slide */
-footer button[aria-expanded="true"] + div { animation: hr-faq .4s var(--m-ease) both; }
-@keyframes hr-faq { from { opacity: 0; transform: translateY(-10px); } }
-
-/* ---------- REVEALS ---------- */
-.m-reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--m-ease) var(--m-delay, 0s), transform .7s var(--m-ease) var(--m-delay, 0s); will-change: opacity, transform; }
-.m-reveal.m-zoom { transform: scale(.9); }
-.m-reveal.m-in { opacity: 1; transform: none; }
-.m-heading { position: relative; }
-.m-heading::after { content: ""; position: absolute; left: 0; bottom: -7px; height: 3px; width: 100%; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform .8s var(--m-ease) .3s; }
-.m-heading.m-in::after { transform: scaleX(1); }
-.m-live-mini { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-sans); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); padding: 3px 9px; border-radius: 100px; border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent); background: color-mix(in oklab, var(--accent) 8%, transparent); }
-.m-live-mini::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: hr-blink 1.2s steps(2) infinite; }
-/* NEW: trending flame */
-.m-flame { display: inline-block; margin-left: 6px; transform-origin: 50% 90%; animation: hr-flick .8s ease-in-out infinite alternate; }
-@keyframes hr-flick { from { rotate: -7deg; scale: 1; } to { rotate: 7deg; scale: 1.18; } }
-
-/* ---------- HERO (NEW cinematic entry) ---------- */
-main h1 { animation: hr-h1 .8s var(--m-ease) both; }
-@keyframes hr-h1 { from { opacity: 0; transform: translateY(26px) rotate(.4deg); filter: blur(5px); } to { opacity: 1; transform: none; filter: blur(0); } }
-main h1 .italic { position: relative; }
-main h1 .italic::after { content: ""; position: absolute; left: -2%; bottom: .02em; height: .16em; width: 104%; background: color-mix(in oklab, var(--accent) 28%, transparent); border-radius: 100px; transform: scaleX(0); transform-origin: 0 50%; animation: hr-draw .7s var(--m-ease) .7s forwards; }
-@keyframes hr-draw { to { transform: scaleX(1); } }
-
-.search-box-polish { animation: hr-search-ring 3.8s ease-in-out infinite; }
-.search-box-polish:hover { animation-play-state: paused; }
-@keyframes hr-search-ring {
-  0%, 100% { box-shadow: var(--sh-2), 0 0 0 0 color-mix(in oklab, var(--accent) 24%, transparent); }
-  50% { box-shadow: var(--sh-2), 0 0 0 9px color-mix(in oklab, var(--accent) 0%, transparent); }
+/* ── AMBIENT BACKGROUND LAYER ───────────────────────────────── */
+#hr-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
 }
-.search-inner-polish > svg { animation: hr-nudge 3s ease-in-out infinite; }
-@keyframes hr-nudge { 0%, 100% { transform: none; } 50% { transform: translateX(3px); } }
-.eyebrow { position: relative; overflow: hidden; }
-.eyebrow::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%); transform: translateX(-140%); animation: hr-shine 3.6s ease-in-out infinite; }
-.chip-polish { position: relative; overflow: hidden; }
-.chip-polish::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in oklab, var(--accent) 14%, transparent) 50%, transparent 65%); transform: translateX(-140%); animation: hr-shine 4.2s ease-in-out calc(var(--i, 0) * .35s) infinite; }
-.chip-polish:active { scale: .93; }
-.stat-val-polish { animation: hr-stat-glow 3.2s ease-in-out infinite; }
-@keyframes hr-stat-glow { 0%, 100% { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 14px color-mix(in oklab, var(--accent) 45%, transparent); } }
-.hr-scroll-hint { display: flex; justify-content: center; margin-top: 18px; }
-.hr-scroll-hint span { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink-faint); font-size: 9px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-.hr-scroll-hint svg { animation: hr-chev 1.6s ease-in-out infinite; }
-@keyframes hr-chev { 0%, 100% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(6px); opacity: 1; } }
 
-/* ---------- HOTEL CARDS ---------- */
-[id^="hotel-card-"]:hover { translate: 0 -6px; }
-[id^="hotel-card-"]::after { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.16) 50%, transparent 60%); transform: translateX(-130%); transition: transform .9s var(--m-ease); }
-[id^="hotel-card-"]:hover::after { transform: translateX(130%); }
-[id^="hotel-card-"]:hover [class*="text-6xl"] { scale: 1.16; rotate: -4deg; }
-/* NEW: cursor-follow glow */
-[id^="hotel-card-"]::before { content: ""; position: absolute; inset: 0; z-index: 5; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(230px circle at var(--cx, 50%) var(--cy, 50%), color-mix(in oklab, var(--accent) 16%, transparent), transparent 65%); }
-[id^="hotel-card-"]:hover::before { opacity: 1; }
-/* NEW: spotlight (featured) pulse ring */
-.m-spotlight { animation: hr-spot 3s ease-in-out infinite; }
-@keyframes hr-spot {
-  0%, 100% { outline: 2px solid color-mix(in oklab, var(--accent) 0%, transparent); outline-offset: 4px; }
-  50% { outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent); outline-offset: 1px; }
+/* Radar sweep */
+#hr-radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  margin: -300px 0 0 -300px;
+  border-radius: 50%;
+  opacity: 0.04;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--accent) 15deg,
+    transparent 30deg,
+    transparent 360deg
+  );
+  animation: hr-radar-spin 8s linear infinite;
 }
-/* NEW: Book Now pill slide + shine */
-.m-book-pill { position: relative; overflow: hidden; transition: translate .3s var(--m-spring); }
-[id^="hotel-card-"]:hover .m-book-pill { translate: -2px 0; }
-.m-book-pill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%); transform: translateX(-140%); transition: transform .7s var(--m-ease); }
-[id^="hotel-card-"]:hover .m-book-pill::after { transform: translateX(140%); }
-/* verified sonar */
-.m-verified { position: relative; }
-.m-verified::after { content: ""; position: absolute; inset: -3px; border-radius: inherit; border: 1.5px solid color-mix(in oklab, var(--good) 70%, transparent); animation: hr-ping-sm 2.6s var(--m-ease) infinite; }
-/* NEW: star twinkle-rotate */
-[id^="hotel-card-"] [class*="bg-black/55"] svg { animation: hr-star 2.8s ease-in-out infinite; }
-@keyframes hr-star { 0%, 100% { scale: 1; rotate: 0deg; } 50% { scale: 1.25; rotate: 18deg; } }
-[id^="hotel-card-"] .w-2\.5 { animation: hr-dot 2s ease-in-out infinite; }
 
-/* ---------- CATEGORIES / CITIES / WHY ---------- */
-.cat-icon-polish {
-  transform: perspective(320px) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg));
-  transition: transform .18s ease, border-color .15s, background-color .15s;
-  animation: hr-bob-soft 5s ease-in-out var(--dl, 0s) infinite alternate;
+@keyframes hr-radar-spin {
+  to { transform: rotate(360deg); }
 }
-.cat-icon-polish:hover { transform: perspective(320px) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg)) scale(1.07); }
-@keyframes hr-bob-soft { from { translate: 0 -2px; } to { translate: 0 3px; } }
 
-.m-city { transition: translate .35s var(--m-ease), box-shadow .35s var(--m-ease); background-size: 180% 180% !important; animation: hr-grad 7s ease-in-out infinite alternate; }
-@keyframes hr-grad { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
-.m-city:hover { translate: 0 -5px; box-shadow: var(--sh-2); }
-.m-city > span[class*="text-3xl"] { animation: hr-bob 6s ease-in-out var(--dl, 0s) infinite alternate; }
-.m-parallax { translate: 0 var(--py, 0px); }
-
-.m-why { transition: translate .35s var(--m-ease), box-shadow .35s var(--m-ease), border-color .3s; }
-.m-why:hover { translate: 0 -5px; box-shadow: var(--sh-2); border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
-.m-why:hover > span[class*="text-3xl"] { animation: hr-wiggle .5s var(--m-spring); }
-@keyframes hr-wiggle { 0% { rotate: 0deg; } 30% { rotate: -12deg; scale: 1.2; } 60% { rotate: 9deg; } 100% { rotate: 0deg; } }
-.m-testi { transition: translate .35s var(--m-ease), box-shadow .35s var(--m-ease); }
-.m-testi:hover { translate: 0 -5px; box-shadow: var(--sh-2); }
-
-/* ---------- CTA / RIPPLE ---------- */
-.m-cta-live { animation: hr-cta-glow 2.6s ease-in-out infinite; }
-@keyframes hr-cta-glow {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent); }
-  50% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--accent) 0%, transparent); }
+/* Sonar rings */
+#hr-sonar-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-.m-cta-band { position: relative; overflow: hidden; }
-.m-cta-band::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 40%, color-mix(in oklab, var(--accent) 10%, transparent) 50%, transparent 60%); transform: translateX(-130%); animation: hr-shine 5s ease-in-out infinite; }
-.m-rip-host { position: relative; overflow: hidden; }
-.m-ripple { position: absolute; border-radius: 50%; pointer-events: none; background: color-mix(in oklab, #fff 55%, transparent); transform: scale(0); animation: hr-ripple .6s var(--m-ease) forwards; }
-@keyframes hr-ripple { to { transform: scale(2.6); opacity: 0; } }
-/* NEW: emoji particle bursts */
-.hr-burst { position: fixed; z-index: 9999; pointer-events: none; font-size: 13px; animation: hr-burst .7s var(--m-ease) forwards; }
-@keyframes hr-burst { from { transform: translate(-50%, -50%) scale(.4); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3); opacity: 0; } }
 
-/* ---------- FOOTER ---------- */
-.hr-cities { overflow: hidden; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper-dim); }
-.hr-cities-track { display: flex; gap: 38px; width: max-content; white-space: nowrap; animation: hr-marquee 28s linear infinite; }
-.hr-cities:hover .hr-cities-track { animation-play-state: paused; }
-.hr-cities span { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-serif); font-weight: 700; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); transition: color .25s; }
-.hr-cities span:hover { color: var(--accent); }
-footer a { transition: translate .25s var(--m-ease), color .15s; }
-footer a:hover { translate: 3px 0; }
-
-/* ---------- DETAIL PAGE ---------- */
-[class*="border-[var(--accent)]/30"] { animation: hr-room-in .45s var(--m-spring) both; }
-@keyframes hr-room-in { from { opacity: 0; scale: .97; } to { opacity: 1; scale: 1; } }
-.fixed.bottom-0[class*="border-t"] { animation: hr-bar-up .5s var(--m-ease) both .2s; }
-@keyframes hr-bar-up { from { transform: translateY(100%); } to { transform: none; } }
-
-/* ---------- BACK TO TOP (NEW progress ring) ---------- */
-[aria-label="Back to top"]::before {
-  content: ""; position: absolute; inset: -4px; border-radius: 50%;
-  background: conic-gradient(var(--accent) calc(var(--sp, 0) * 1turn), color-mix(in oklab, var(--line) 60%, transparent) 0);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
-          mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
-  opacity: calc(.35 + var(--sp, 0) * .65);
+.hr-sonar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: hr-sonar-expand 4s ease-out infinite;
 }
-[aria-label="Back to top"] svg { animation: hr-chev-up 2.2s ease-in-out infinite; }
-@keyframes hr-chev-up { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 
-/* ---------- REDUCED MOTION ---------- */
+.hr-sonar-ring:nth-child(1) { width: 100px; height: 100px; animation-delay: 0s; }
+.hr-sonar-ring:nth-child(2) { width: 100px; height: 100px; animation-delay: 1.3s; }
+.hr-sonar-ring:nth-child(3) { width: 100px; height: 100px; animation-delay: 2.6s; }
+
+@keyframes hr-sonar-expand {
+  0%   { width: 60px; height: 60px; opacity: 0.15; }
+  100% { width: 500px; height: 500px; opacity: 0; }
+}
+
+/* Dot grid overlay */
+#hr-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.35;
+  animation: hr-grid-drift 20s linear infinite;
+}
+
+@keyframes hr-grid-drift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 32px 32px; }
+}
+
+/* Breathing glow */
+#hr-breathe-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  margin-left: -200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  opacity: 0.03;
+  animation: hr-breathe 6s ease-in-out infinite;
+}
+
+@keyframes hr-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.03; }
+  50%       { transform: scale(1.3); opacity: 0.06; }
+}
+
+/* Cursor spotlight */
+#hr-cursor-spot {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+  transform: translate(-50%, -50%);
+  transition: left 0.08s, top 0.08s;
+}
+
+/* Floating emojis */
+.hr-float-emoji {
+  position: absolute;
+  font-size: 20px;
+  pointer-events: none;
+  animation: hr-float-up linear infinite;
+  opacity: 0.18;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-float-up {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.18; }
+  80%  { opacity: 0.12; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+/* Fireflies */
+.hr-firefly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  opacity: 0;
+  animation: hr-firefly-blink linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-firefly-blink {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  25%       { opacity: 0.7; transform: translate(var(--dx, 20px), var(--dy, -20px)); }
+  75%       { opacity: 0.4; }
+}
+
+/* Shooting comets */
+.hr-comet {
+  position: absolute;
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+  opacity: 0;
+  animation: hr-comet-shoot linear infinite;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-comet-shoot {
+  0%   { opacity: 0; transform: translateX(0) translateY(0); }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.2; }
+  100% { opacity: 0; transform: translateX(200px) translateY(80px); }
+}
+
+/* ── ACTIVITY TICKER ─────────────────────────────────────────── */
+#hr-activity-ticker {
+  position: fixed;
+  top: var(--nav-h, 56px);
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  z-index: 29;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+#hr-activity-ticker.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#hr-ticker-inner {
+  white-space: nowrap;
+  animation: hr-ticker-scroll 30s linear infinite;
+  padding-left: 100%;
+}
+
+@keyframes hr-ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ── HEADER SCROLL SHADOW ────────────────────────────────────── */
+header.hr-scrolled {
+  box-shadow: 0 2px 20px color-mix(in srgb, var(--ink) 12%, transparent) !important;
+  transition: box-shadow 0.3s;
+}
+
+/* Logo radar ring */
+.hr-logo-radar {
+  position: relative;
+  display: inline-block;
+}
+
+.hr-logo-radar::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  animation: hr-logo-ping 3s ease-out infinite;
+}
+
+@keyframes hr-logo-ping {
+  0%   { inset: -4px; opacity: 0.5; }
+  100% { inset: -18px; opacity: 0; }
+}
+
+/* Login button shine */
+@keyframes hr-btn-shine {
+  0%   { left: -100%; }
+  50%  { left: 200%; }
+  100% { left: 200%; }
+}
+
+.hr-login-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.hr-login-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: hr-btn-shine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── HERO SECTION ────────────────────────────────────────────── */
+.hr-hero-title-reveal {
+  animation: hr-cinematic-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hr-cinematic-in {
+  0%   { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* Typewriter cursor */
+.hr-typewriter::after {
+  content: '|';
+  animation: hr-cursor-blink 0.8s ease-in-out infinite;
+  color: var(--accent);
+}
+
+@keyframes hr-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Search ring breathe */
+.search-box-polish.hr-search-breathe {
+  animation: hr-ring-breathe 3s ease-in-out infinite;
+}
+
+@keyframes hr-ring-breathe {
+  0%, 100% { box-shadow: var(--sh-2), 0 0 0 0 color-mix(in srgb, var(--accent) 20%, transparent); }
+  50%       { box-shadow: var(--sh-2), 0 0 0 8px transparent; }
+}
+
+/* Chip shimmer */
+.chip-polish.hr-chip-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--paper-dim) 0%,
+    var(--line) 50%,
+    var(--paper-dim) 100%
+  );
+  background-size: 200% 100%;
+  animation: hr-chip-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes hr-chip-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Stat glow */
+.stat-val-polish.hr-stat-glow {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
+  animation: hr-stat-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes hr-stat-pulse {
+  0%, 100% { text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent); }
+  50%       { text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 60%, transparent); }
+}
+
+/* Scroll hint bob */
+#hr-scroll-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 38px;
+  border: 2px solid var(--ink-faint);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+#hr-scroll-hint::before {
+  content: '';
+  width: 4px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: hr-scroll-bob 1.5s ease-in-out infinite;
+}
+
+@keyframes hr-scroll-bob {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50%       { transform: translateY(8px); opacity: 0.4; }
+}
+
+/* ── HOTEL CARDS ─────────────────────────────────────────────── */
+
+/* Staggered reveal */
+[id^="hotel-card-"] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.25s;
+}
+
+[id^="hotel-card-"].hr-card-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hover lift + cursor glow */
+[id^="hotel-card-"]:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: var(--sh-2), 0 0 0 1px var(--accent) !important;
+}
+
+/* Emoji zoom on card hover */
+[id^="hotel-card-"]:hover .text-6xl,
+[id^="hotel-card-"]:hover .text-4xl {
+  animation: hr-emoji-zoom 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes hr-emoji-zoom {
+  0%   { transform: scale(1); }
+  60%  { transform: scale(1.3); }
+  100% { transform: scale(1.15); }
+}
+
+/* Verified sonar ring */
+.hr-verified-sonar {
+  position: relative;
+}
+
+.hr-verified-sonar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--good);
+  opacity: 0;
+  animation: hr-verified-ping 3s ease-out infinite;
+}
+
+@keyframes hr-verified-ping {
+  0%   { inset: -3px; opacity: 0.6; }
+  100% { inset: -10px; opacity: 0; }
+}
+
+/* Featured pulse ring */
+.hr-featured-ring {
+  position: relative;
+}
+
+.hr-featured-ring::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1.5px solid var(--accent);
+  animation: hr-featured-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hr-featured-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0; transform: scale(1.04); }
+}
+
+/* Book Now shine */
+@keyframes hr-book-shine {
+  0%   { left: -100%; }
+  60%  { left: 150%; }
+  100% { left: 150%; }
+}
+
+.hr-book-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.hr-book-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: hr-book-shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── CATEGORY ICONS ──────────────────────────────────────────── */
+
+.cat-icon-polish.hr-cat-bob {
+  animation: hr-cat-bob 3s ease-in-out infinite;
+}
+
+@keyframes hr-cat-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+.cat-icon-polish:hover {
+  transform: perspective(200px) rotateX(8deg) scale(1.08) !important;
+  transition: transform 0.2s !important;
+}
+
+/* City card gradient pan */
+[class*="rounded"][style*="imageBg"],
+.hr-city-card {
+  background-size: 150% 150% !important;
+  animation: hr-grad-pan 6s ease-in-out infinite;
+}
+
+@keyframes hr-grad-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* Testimonial auto-drift */
+#hr-testimonial-rail {
+  animation: hr-testimonial-drift 25s linear infinite;
+}
+
+@keyframes hr-testimonial-drift {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── WISHLIST HEART BURST ────────────────────────────────────── */
+.hr-heart-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.hr-heart-particle {
+  position: absolute;
+  font-size: 12px;
+  opacity: 1;
+  animation: hr-heart-fly 0.8s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-heart-fly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--pdx, 40px), var(--pdy, -60px)) scale(0.3); opacity: 0; }
+}
+
+/* Book Now sparkle */
+.hr-sparkle-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.hr-sparkle-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: hr-sparkle-fly 0.6s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-sparkle-fly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--sdx, 30px), var(--sdy, -40px)) scale(0); opacity: 0; }
+}
+
+/* Button ripple */
+.hr-ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+
+.hr-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  animation: hr-ripple-expand 0.5s ease-out forwards;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-ripple-expand {
+  0%   { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* ── PAGE TRANSITIONS ────────────────────────────────────────── */
+#hr-page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 8888;
+  pointer-events: none;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+#hr-page-transition.active {
+  opacity: 0.15;
+}
+
+/* ── BOTTOM SHEET ────────────────────────────────────────────── */
+.bottom-sheet .hr-handle-wiggle {
+  animation: hr-handle-wiggle 2s ease-in-out infinite;
+}
+
+@keyframes hr-handle-wiggle {
+  0%, 100% { transform: scaleX(1); }
+  50%       { transform: scaleX(1.3); }
+}
+
+/* ── TOAST SPRING ────────────────────────────────────────────── */
+.hr-toast-spring {
+  animation: hr-toast-spring 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes hr-toast-spring {
+  0%   { transform: translate(-50%, 24px) scale(0.8); opacity: 0; }
+  100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+
+/* ── BACK TO TOP PROGRESS RING ───────────────────────────────── */
+#hr-back-top {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  z-index: 200;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+#hr-back-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#hr-back-top svg {
+  width: 40px;
+  height: 40px;
+  transform: rotate(-90deg);
+}
+
+#hr-back-top-circle {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 110;
+  stroke-dashoffset: 110;
+  fill: var(--card);
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+#hr-back-top-arrow {
+  fill: var(--accent);
+}
+
+/* ── DRAWER ITEM STAGGER ─────────────────────────────────────── */
+.hr-drawer-item {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: hr-drawer-slide 0.3s ease-out forwards;
+}
+
+@keyframes hr-drawer-slide {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── SECTION HEADING REVEAL ──────────────────────────────────── */
+.hr-heading-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.hr-heading-reveal.active {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── REDUCED MOTION ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .hr-ambient *, .hr-ticker-track, .hr-cities-track, .m-cta-live, .eyebrow::after,
-  .chip-polish::after, .search-box-polish, .cat-icon-polish, .m-logo::after,
-  .m-verified::after, .stat-val-polish, header .animate-pulse::after,
-  header button[class*="bg-[var(--accent)]"]::after, .m-live-mini::before,
-  .hr-scroll-hint svg, [aria-label="Back to top"] svg, .m-flame, .m-spotlight,
-  .m-city, header a[href="wishlist.html"] svg, footer .lucide-heart,
-  header a[href="wishlist.html"] svg, .hr-burst { animation: none !important; }
-  .m-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-  main h1 { animation: none !important; }
-  main h1 .italic::after { transform: scaleX(1) !important; animation: none !important; }
-  main.m-page-in, .animate-fade-in, .animate-toast { animation: none !important; }
+  #hr-ambient,
+  #hr-cursor-spot,
+  #hr-activity-ticker,
+  #hr-scroll-hint,
+  #hr-back-top,
+  #hr-scroll-bar,
+  .hr-float-emoji,
+  .hr-firefly,
+  .hr-comet,
+  [id^="hotel-card-"],
+  .cat-icon-polish,
+  .chip-polish,
+  .stat-val-polish,
+  .search-box-polish,
+  .hr-logo-radar,
+  .hr-login-shine,
+  .hr-book-shine,
+  .hr-heart-burst,
+  .hr-sparkle-burst {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  [id^="hotel-card-"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   HOTELRADAR MOTION v2 — Extra Animations
+   ============================================================ */
+
+/* ── SPLASH SCREEN ───────────────────────────────────────────── */
+#hr-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+#hr-splash.hide {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+#hr-splash-logo {
+  font-size: 52px;
+  animation: hr-splash-logo-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+#hr-splash-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  animation: hr-splash-text-in 0.6s 0.2s ease-out both;
+}
+
+#hr-splash-sub {
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  animation: hr-splash-text-in 0.6s 0.35s ease-out both;
+}
+
+#hr-splash-bar {
+  width: 120px;
+  height: 3px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+  animation: hr-splash-text-in 0.4s 0.5s ease-out both;
+}
+
+#hr-splash-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--good));
+  border-radius: 99px;
+  width: 0%;
+  animation: hr-splash-load 1.2s 0.6s ease-out forwards;
+}
+
+@keyframes hr-splash-logo-bounce {
+  0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  60%  { transform: scale(1.15) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes hr-splash-text-in {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes hr-splash-load {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ── AURORA BACKGROUND ───────────────────────────────────────── */
+#hr-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.06;
+}
+
+.hr-aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: hr-aurora-drift ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.hr-aurora-blob:nth-child(1) {
+  width: 500px; height: 500px;
+  background: var(--accent);
+  top: -100px; left: -100px;
+  animation-duration: 12s;
+}
+
+.hr-aurora-blob:nth-child(2) {
+  width: 400px; height: 400px;
+  background: var(--good);
+  top: 30%; right: -80px;
+  animation-duration: 15s;
+  animation-delay: -5s;
+}
+
+.hr-aurora-blob:nth-child(3) {
+  width: 350px; height: 350px;
+  background: var(--accent);
+  bottom: -80px; left: 30%;
+  animation-duration: 18s;
+  animation-delay: -9s;
+}
+
+@keyframes hr-aurora-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(80px, 60px) scale(1.2); }
+}
+
+/* ── ANIMATED GRADIENT MESH ──────────────────────────────────── */
+#hr-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.04;
+  background:
+    radial-gradient(ellipse at 20% 20%, var(--accent) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, var(--good) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, var(--accent) 0%, transparent 60%);
+  background-size: 200% 200%;
+  animation: hr-mesh-shift 10s ease-in-out infinite alternate;
+}
+
+@keyframes hr-mesh-shift {
+  0%   { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  100% { background-position: 100% 100%, 0% 0%, 60% 40%; }
+}
+
+/* ── MATRIX HOTEL NAMES ──────────────────────────────────────── */
+#hr-matrix-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+/* ── PARALLAX HERO ───────────────────────────────────────────── */
+.hr-parallax-slow {
+  will-change: transform;
+  transition: transform 0.05s linear;
+}
+
+.hr-parallax-fast {
+  will-change: transform;
+  transition: transform 0.03s linear;
+}
+
+/* ── NUMBER COUNTER ──────────────────────────────────────────── */
+.hr-count-up {
+  display: inline-block;
+  transition: none;
+}
+
+/* ── MAGNETIC BUTTON ─────────────────────────────────────────── */
+.hr-magnetic {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  will-change: transform;
+}
+
+/* ── SEARCH CONFETTI ─────────────────────────────────────────── */
+.hr-confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: hr-confetti-fall linear forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes hr-confetti-fall {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--cx, 0px), var(--cy, 200px)) rotate(var(--cr, 360deg)) scale(0.3); opacity: 0; }
+}
+
+/* ── 3D CARD FLIP ────────────────────────────────────────────── */
+.hr-flip-wrapper {
+  perspective: 800px;
+}
+
+.hr-flip-inner {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.hr-flip-wrapper:hover .hr-flip-inner {
+  transform: rotateY(6deg) rotateX(-3deg);
+}
+
+/* ── STICKY HEADER MORPH ─────────────────────────────────────── */
+header.hr-morph-small {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  background: var(--paper) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease !important;
+}
+
+header {
+  transition: all 0.3s ease;
+}
+
+/* ── MENU WAVE EFFECT ────────────────────────────────────────── */
+.hr-wave-item {
+  display: inline-block;
+  animation: hr-wave-bob 2s ease-in-out infinite;
+}
+
+@keyframes hr-wave-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* ── GLASSMORPHISM HOVER OVERLAY ─────────────────────────────── */
+[id^="hotel-card-"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.08) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[id^="hotel-card-"]:hover::before {
+  opacity: 1;
+}
+
+/* ── SCROLL SNAP SECTIONS ────────────────────────────────────── */
+.hr-snap-section {
+  scroll-snap-align: start;
+}
+
+/* ── STAGGER NAV ITEMS ───────────────────────────────────────── */
+.hr-nav-stagger {
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: hr-nav-drop 0.4s ease-out forwards;
+}
+
+@keyframes hr-nav-drop {
+  to { opacity: 1; transform: none; }
+}
+
+/* ── REDUCED MOTION additions ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  #hr-splash,
+  #hr-aurora,
+  #hr-mesh,
+  #hr-matrix-canvas,
+  .hr-confetti-piece,
+  .hr-wave-item,
+  .hr-nav-stagger {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  #hr-splash { display: none !important; }
 }
