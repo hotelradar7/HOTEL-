@@ -1,0 +1,462 @@
+/* ============================================================
+   HotelRadar — animations.css
+   Inject-only file. Does NOT override Tailwind / app.css.
+   Targets real site's existing class names & DOM structure.
+   ============================================================ */
+
+/* ── KEYFRAMES ─────────────────────────────────────────────── */
+@keyframes hr-slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hr-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes hr-scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes hr-glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,99,28,0); }
+  50%       { box-shadow: 0 0 18px 4px rgba(232,99,28,0.22); }
+}
+@keyframes hr-borderGlow {
+  0%, 100% { border-color: var(--line); }
+  50%       { border-color: var(--accent); }
+}
+@keyframes hr-gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes hr-scanLine {
+  0%         { top: -4px; opacity: 0; }
+  5%         { opacity: 1; }
+  95%        { opacity: 1; }
+  100%       { top: 100%; opacity: 0; }
+}
+@keyframes hr-morphBlob {
+  0%,100% { border-radius: 60% 40% 30% 70%/60% 30% 70% 40%; }
+  33%     { border-radius: 30% 60% 70% 40%/50% 60% 30% 60%; }
+  66%     { border-radius: 50% 60% 30% 60%/40% 30% 70% 50%; }
+}
+@keyframes hr-orbitA {
+  from { transform: rotate(0deg) translateX(130px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(130px) rotate(-360deg); }
+}
+@keyframes hr-orbitB {
+  from { transform: rotate(180deg) translateX(90px) rotate(-180deg); }
+  to   { transform: rotate(540deg) translateX(90px) rotate(-540deg); }
+}
+@keyframes hr-shimmerShine {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+@keyframes hr-cardIn {
+  from { opacity: 0; transform: perspective(700px) rotateY(-8deg) translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: perspective(700px) rotateY(0) translateY(0) scale(1); }
+}
+@keyframes hr-pinPulse {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes hr-floatY {
+  0%,100% { transform: translateY(0px) rotate(-0.5deg); }
+  50%      { transform: translateY(-10px) rotate(0.5deg); }
+}
+@keyframes hr-ripple {
+  0%   { transform: scale(0); opacity: 0.55; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes hr-navGlow {
+  0%,100% { box-shadow: 0 1px 0 var(--line); }
+  50%      { box-shadow: 0 1px 14px rgba(232,99,28,0.18), 0 1px 0 var(--line); }
+}
+@keyframes hr-statBounce {
+  0%,100% { transform: translateY(0); }
+  40%     { transform: translateY(-6px); }
+  60%     { transform: translateY(-3px); }
+}
+@keyframes hr-waveBar {
+  0%,100% { transform: scaleY(0.5); }
+  50%      { transform: scaleY(1.4); }
+}
+@keyframes hr-eyebrowShine {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+
+/* ── HERO SECTION ───────────────────────────────────────────── */
+
+/* Scan line across hero */
+.hr-hero-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.hr-hero-wrap::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 18px var(--accent), 0 0 40px rgba(232,99,28,0.3);
+  animation: hr-scanLine 7s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Morphing background blobs */
+.hr-blob {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
+  animation: hr-morphBlob 14s ease-in-out infinite;
+}
+.hr-blob-1 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(232,99,28,0.09) 0%, transparent 70%);
+  top: -80px; left: -80px;
+  animation-duration: 16s;
+}
+.hr-blob-2 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(232,99,28,0.06) 0%, transparent 70%);
+  bottom: -60px; right: -60px;
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+/* Orbit particles */
+.hr-orbit-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.hr-orbit-dot {
+  position: absolute;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(232,99,28,0.6);
+  animation: hr-orbitA 22s linear infinite;
+}
+.hr-orbit-dot:nth-child(2) {
+  animation: hr-orbitB 15s linear infinite;
+  background: var(--good);
+  box-shadow: 0 0 10px rgba(13,122,74,0.5);
+  animation-delay: -4s;
+}
+.hr-orbit-dot:nth-child(3) {
+  animation: hr-orbitA 30s linear infinite reverse;
+  opacity: 0.5;
+  animation-delay: -9s;
+}
+
+/* ── EYEBROW / TITLE ANIMATIONS ────────────────────────────── */
+.hr-anim-eyebrow {
+  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
+  position: relative;
+  overflow: hidden;
+}
+/* Animated shine across eyebrow badge */
+.hr-anim-eyebrow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 55%, transparent 70%);
+  background-size: 200% 100%;
+  animation: hr-eyebrowShine 3.5s ease-in-out infinite 1s;
+  pointer-events: none;
+}
+
+.hr-anim-h1 {
+  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.12s both;
+  background: linear-gradient(130deg, var(--ink) 0%, var(--accent) 50%, var(--ink) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation-name: hr-slideUp, hr-gradientShift;
+  animation-duration: 0.55s, 7s;
+  animation-delay: 0.12s, 1s;
+  animation-timing-function: cubic-bezier(0.16,1,0.3,1), ease;
+  animation-fill-mode: both, none;
+  animation-iteration-count: 1, infinite;
+}
+
+.hr-anim-sub {
+  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.22s both;
+}
+
+/* ── NAVBAR ENHANCEMENTS ────────────────────────────────────── */
+.hr-nav-enhanced {
+  transition: box-shadow 0.4s ease, background 0.3s ease !important;
+}
+.hr-nav-enhanced.scrolled {
+  box-shadow: 0 4px 20px rgba(232,99,28,0.12), 0 1px 0 var(--line) !important;
+}
+/* Nav brand icon float */
+.hr-nav-brand-icon {
+  display: inline-block;
+  animation: hr-floatY 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(232,99,28,0.4));
+}
+
+/* ── HOTEL CARD ─────────────────────────────────────────────── */
+
+/* 3D card entrance (applied via JS on scroll reveal) */
+.hr-card-hidden {
+  opacity: 0;
+  transform: perspective(700px) rotateY(-8deg) translateY(28px) scale(0.96);
+}
+.hr-card-visible {
+  animation: hr-cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+/* Hover enhancement — border glow ring */
+.group.hr-card-init {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform 0.35s cubic-bezier(0.2,0.8,0.2,1),
+    box-shadow 0.35s ease,
+    border-color 0.3s ease !important;
+}
+.group.hr-card-init:hover {
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.14),
+    0 0 0 1px rgba(232,99,28,0.3),
+    0 0 28px rgba(232,99,28,0.1) !important;
+}
+
+/* Shine sweep on card image hover */
+.hr-card-img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.hr-card-img-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 55%; height: 100%;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 55%, transparent 75%);
+  transition: left 0.65s ease;
+  z-index: 8;
+  pointer-events: none;
+}
+.group:hover .hr-card-img-wrap::after {
+  left: 160%;
+}
+
+/* Image zoom on hover */
+.hr-img-zoom {
+  transition: transform 0.6s cubic-bezier(0.2,0.8,0.2,1) !important;
+}
+.group:hover .hr-img-zoom {
+  transform: scale(1.07) !important;
+}
+
+/* Glare overlay */
+.hr-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255,255,255,0.14) 0%,
+    transparent 65%
+  );
+  opacity: var(--go, 0);
+  transition: opacity 0.3s;
+}
+
+/* ── BADGE GLOW ─────────────────────────────────────────────── */
+.hr-badge-verified {
+  animation: hr-glowPulse 3s ease-in-out infinite !important;
+  box-shadow: 0 0 10px rgba(13,122,74,0.45), 0 2px 6px rgba(0,0,0,0.15) !important;
+}
+.hr-badge-featured {
+  animation: hr-glowPulse 2.5s ease-in-out infinite 0.5s !important;
+  box-shadow: 0 0 12px rgba(232,99,28,0.5), 0 2px 6px rgba(0,0,0,0.15) !important;
+}
+@keyframes hr-glowPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(232,99,28,0.2); }
+  50%      { box-shadow: 0 0 18px rgba(232,99,28,0.5); }
+}
+
+/* ── SEARCH BOX ─────────────────────────────────────────────── */
+.search-box-polish {
+  transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s !important;
+}
+.search-box-polish:hover,
+.search-box-polish:focus-within {
+  transform: translateY(-2px) !important;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,0.1),
+    0 0 0 2px rgba(232,99,28,0.15) !important;
+}
+
+/* Search button shimmer */
+.search-btn-polish {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(232,99,28,0.35) !important;
+  transition: opacity 0.15s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
+}
+.search-btn-polish::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -80%;
+  width: 45%; height: 100%;
+  background: rgba(255,255,255,0.25);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.search-btn-polish:hover {
+  opacity: 1 !important;
+  transform: scale(1.03) translateY(-1px) !important;
+  box-shadow: 0 8px 22px rgba(232,99,28,0.5) !important;
+}
+.search-btn-polish:hover::before {
+  left: 130%;
+}
+.search-btn-polish:active {
+  transform: scale(0.97) !important;
+}
+
+/* ── CHIP FILTER PILLS ──────────────────────────────────────── */
+.chip-polish {
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
+}
+.chip-polish:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 16px rgba(232,99,28,0.18) !important;
+}
+.chip-polish:active {
+  transform: translateY(0) scale(0.97) !important;
+}
+
+/* ── STAT ITEMS ─────────────────────────────────────────────── */
+.stat-item-polish {
+  transition: background 0.25s, transform 0.3s cubic-bezier(0.2,0.8,0.2,1) !important;
+  cursor: default;
+}
+.stat-item-polish:hover {
+  background: var(--accent-dim) !important;
+  transform: translateY(-4px) scale(1.04) !important;
+}
+.stat-val-polish {
+  transition: transform 0.3s, text-shadow 0.3s !important;
+  text-shadow: 0 0 16px rgba(232,99,28,0.2);
+}
+.stat-item-polish:hover .stat-val-polish {
+  transform: scale(1.12) !important;
+  text-shadow: 0 0 22px rgba(232,99,28,0.45) !important;
+}
+
+/* ── CATEGORY ICONS ─────────────────────────────────────────── */
+.cat-icon-polish {
+  transition: border-color 0.2s, background-color 0.2s, transform 0.3s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
+}
+.cat-icon-polish:hover {
+  transform: translateY(-5px) scale(1.1) !important;
+  box-shadow: 0 10px 22px rgba(232,99,28,0.18) !important;
+}
+
+/* ── BOTTOM SHEET / MODAL ───────────────────────────────────── */
+.bottom-sheet {
+  animation: hr-slideUp 0.28s cubic-bezier(0.32,0.72,0,1) forwards !important;
+}
+
+/* ── STICKY FILTER BAR ──────────────────────────────────────── */
+.hr-filter-bar {
+  transition: box-shadow 0.3s !important;
+}
+.hr-filter-bar.elevated {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px var(--line) !important;
+}
+
+/* ── RIPPLE ─────────────────────────────────────────────────── */
+.hr-ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  transform: scale(0);
+  animation: hr-ripple 0.55s linear forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── SCROLL REVEAL CLASSES ──────────────────────────────────── */
+.hr-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+.hr-reveal.hr-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── FOOTER LINKS ───────────────────────────────────────────── */
+.footer-link {
+  transition: color 0.2s, transform 0.2s !important;
+}
+.footer-link:hover {
+  transform: translateX(3px) !important;
+}
+
+/* Footer social icons */
+.footer-social-btn {
+  transition: transform 0.2s cubic-bezier(0.2,0.8,0.2,1), opacity 0.2s, box-shadow 0.2s !important;
+}
+.footer-social-btn:hover {
+  transform: scale(1.18) translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+}
+
+/* ── THREE.JS GLOBE CANVAS ──────────────────────────────────── */
+#hr-three-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+}
+#hr-three-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── THEME: NIGHT ───────────────────────────────────────────── */
+html[data-theme="night"] .hr-anim-h1 {
+  background: linear-gradient(130deg, var(--ink) 0%, #ff7a3d 50%, var(--ink) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html[data-theme="emerald"] .hr-anim-h1 {
+  background: linear-gradient(130deg, var(--ink) 0%, #0d7a4a 50%, var(--ink) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html[data-theme="indigo"] .hr-anim-h1 {
+  background: linear-gradient(130deg, var(--ink) 0%, #4f46e5 50%, var(--ink) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

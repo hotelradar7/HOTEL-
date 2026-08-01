@@ -15,8 +15,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script type="module" crossorigin src="./app.js"></script>
     <link rel="stylesheet" crossorigin href="./app.css">
+
+    <!-- HotelRadar 3D Animations -->
+    <link rel="stylesheet" href="./animations.css">
+    <!-- Three.js for 3D Globe -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Animations injected after React renders -->
+    <script src="./animations.js" defer></script>
   </body>
 </html>
