@@ -2,30 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HotelRadar — India's Hotel Directory</title>
-    <!-- Google Fonts: Fraunces & Inter -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HotelRadar — India's Trusted Hotel Directory</title>
+    <meta name="description" content="Find verified hotels, resorts, and ashrams across India. Direct desk pricing, zero booking fees." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    
-    <!-- Firebase Compat SDK v10 CDNs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script type="module" crossorigin src="./app.js"></script>
-    <link rel="stylesheet" crossorigin href="./app.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
 
-    <!-- HotelRadar 3D Animations -->
+    <!-- Animations CSS — loads before React so no flash -->
     <link rel="stylesheet" href="./animations.css">
-    <!-- Three.js for 3D Globe -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+
+    <!-- Real site CSS (Tailwind + custom) -->
+    <link rel="stylesheet" crossorigin href="./app.css">
   </head>
   <body>
     <div id="root"></div>
-    <!-- Animations injected after React renders -->
+
+    <!-- React app bundle -->
+    <script type="module" crossorigin src="./app.js"></script>
+
+    <!-- Lightweight animation fixes — defer so it doesn't block React -->
     <script src="./animations.js" defer></script>
   </body>
 </html>

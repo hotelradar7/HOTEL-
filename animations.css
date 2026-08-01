@@ -1,462 +1,304 @@
 /* ============================================================
-   HotelRadar — animations.css
-   Inject-only file. Does NOT override Tailwind / app.css.
-   Targets real site's existing class names & DOM structure.
+   HotelRadar — animations.css  v2.0
+   Targets real site's existing Tailwind classes.
+   NO Three.js, NO heavy JS — pure CSS only for performance.
+   All fixes: no load delay, no scroll lag, no direct-call,
+   "Stay Niche" badge hidden, double name fix, scroll perf.
    ============================================================ */
 
-/* ── KEYFRAMES ─────────────────────────────────────────────── */
-@keyframes hr-slideUp {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes hr-fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes hr-scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes hr-glowPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(232,99,28,0); }
-  50%       { box-shadow: 0 0 18px 4px rgba(232,99,28,0.22); }
-}
-@keyframes hr-borderGlow {
-  0%, 100% { border-color: var(--line); }
-  50%       { border-color: var(--accent); }
-}
-@keyframes hr-gradientShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-@keyframes hr-scanLine {
-  0%         { top: -4px; opacity: 0; }
-  5%         { opacity: 1; }
-  95%        { opacity: 1; }
-  100%       { top: 100%; opacity: 0; }
-}
-@keyframes hr-morphBlob {
-  0%,100% { border-radius: 60% 40% 30% 70%/60% 30% 70% 40%; }
-  33%     { border-radius: 30% 60% 70% 40%/50% 60% 30% 60%; }
-  66%     { border-radius: 50% 60% 30% 60%/40% 30% 70% 50%; }
-}
-@keyframes hr-orbitA {
-  from { transform: rotate(0deg) translateX(130px) rotate(0deg); }
-  to   { transform: rotate(360deg) translateX(130px) rotate(-360deg); }
-}
-@keyframes hr-orbitB {
-  from { transform: rotate(180deg) translateX(90px) rotate(-180deg); }
-  to   { transform: rotate(540deg) translateX(90px) rotate(-540deg); }
-}
-@keyframes hr-shimmerShine {
-  0%   { left: -100%; }
-  100% { left: 200%; }
-}
-@keyframes hr-cardIn {
-  from { opacity: 0; transform: perspective(700px) rotateY(-8deg) translateY(30px) scale(0.96); }
-  to   { opacity: 1; transform: perspective(700px) rotateY(0) translateY(0) scale(1); }
-}
-@keyframes hr-pinPulse {
-  0%   { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(2.4); opacity: 0; }
-}
-@keyframes hr-floatY {
-  0%,100% { transform: translateY(0px) rotate(-0.5deg); }
-  50%      { transform: translateY(-10px) rotate(0.5deg); }
-}
-@keyframes hr-ripple {
-  0%   { transform: scale(0); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 0; }
-}
-@keyframes hr-navGlow {
-  0%,100% { box-shadow: 0 1px 0 var(--line); }
-  50%      { box-shadow: 0 1px 14px rgba(232,99,28,0.18), 0 1px 0 var(--line); }
-}
-@keyframes hr-statBounce {
-  0%,100% { transform: translateY(0); }
-  40%     { transform: translateY(-6px); }
-  60%     { transform: translateY(-3px); }
-}
-@keyframes hr-waveBar {
-  0%,100% { transform: scaleY(0.5); }
-  50%      { transform: scaleY(1.4); }
-}
-@keyframes hr-eyebrowShine {
-  from { background-position: -200% center; }
-  to   { background-position: 200% center; }
+/* ── 1. FIX: IMMEDIATE PAGE LOAD — no 2-second blank flash ── */
+/* The site uses .animate-fade-in which fades from opacity:0   */
+/* Force it to run faster and start immediately                 */
+.animate-fade-in {
+  animation-duration: 0.15s !important;
+  animation-delay: 0s !important;
 }
 
-/* ── HERO SECTION ───────────────────────────────────────────── */
+/* ── 2. FIX: "STAY NICHE" DOUBLE INFO — hide the badge ─────── */
+/* In hotel card: "Stay Niche: hotel (basic tier)" is redundant */
+/* The hotel type is already shown in the card area section     */
+/* Target: the span with text "Stay Niche:" inside card body    */
+[class*="mb-2.5"].flex.items-center.gap-1 {
+  display: none !important;
+}
 
-/* Scan line across hero */
-.hr-hero-wrap {
+/* ── 3. FIX: REMOVE DIRECT CALL BUTTON ─────────────────────── */
+/* In compare modal: "Call Direct" button with phone icon       */
+/* Hide all tel: anchor links and call buttons in compare table */
+a[href^="tel:"],
+button[onclick*="tel:"],
+[class*="Call Direct"],
+td button[class*="accent"]:has(svg) {
+  display: none !important;
+}
+
+/* ── 4. FIX: SCROLL LAG — GPU-accelerate scrollable areas ──── */
+/* Force GPU compositing on main scroll container               */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+}
+
+/* Prevent layout thrash on scroll */
+header,
+.sticky,
+[class*="sticky"] {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce paint cost on hotel card grid */
+[class*="grid-cols"] {
+  contain: layout style;
+}
+
+/* Optimize images and gradient backgrounds */
+[class*="aspect-16"] {
+  contain: strict;
+  will-change: transform;
+}
+
+/* ── 5. HOTEL CARD — smooth hover, no tilt (perf-safe) ─────── */
+/* Simple CSS-only card hover — no JS tilt to cause lag         */
+.group.relative.flex.flex-col.overflow-hidden {
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+  transform-origin: center;
+}
+.group.relative.flex.flex-col.overflow-hidden:hover {
+  transform: translateY(-3px) !important;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.12),
+    0 0 0 1px rgba(232,99,28,0.2) !important;
+}
+
+/* Image zoom on card hover */
+.group:hover [class*="aspect-16"] > div[style] {
+  transform: scale(1.04) !important;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+/* ── 6. BADGE GLOW ─────────────────────────────────────────── */
+/* Verified badge */
+[class*="bg-emerald-500"][class*="text-white"][class*="text-\\[9\\.5px\\]"],
+[class*="bg-emerald-500"][class*="tracking-wide"][class*="uppercase"] {
+  box-shadow: 0 0 10px rgba(13,122,74,0.4) !important;
+  animation: hr-badgeGlow 3s ease-in-out infinite !important;
+}
+
+/* Featured badge */
+[class*="bg-amber-500"][class*="text-white"][class*="tracking-wide"] {
+  box-shadow: 0 0 10px rgba(245,158,11,0.5) !important;
+}
+
+@keyframes hr-badgeGlow {
+  0%,100% { box-shadow: 0 0 8px rgba(13,122,74,0.3); }
+  50%      { box-shadow: 0 0 16px rgba(13,122,74,0.55); }
+}
+
+/* ── 7. SEARCH BOX — enhanced focus glow ───────────────────── */
+.search-box-polish:focus-within {
+  box-shadow: 0 0 0 2px rgba(232,99,28,0.2), var(--sh-3) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-1px);
+}
+
+/* ── 8. STAT ITEMS — hover lift ─────────────────────────────── */
+.stat-item-polish {
+  transition: background-color 0.2s, transform 0.25s cubic-bezier(0.2,0.8,0.2,1) !important;
+  cursor: default;
+}
+.stat-item-polish:hover {
+  background: var(--accent-dim) !important;
+  transform: translateY(-3px) scale(1.04) !important;
+}
+.stat-item-polish:hover .stat-val-polish {
+  transform: scale(1.1);
+  text-shadow: 0 0 18px rgba(232,99,28,0.4);
+}
+.stat-val-polish {
+  transition: transform 0.25s, text-shadow 0.25s !important;
+}
+
+/* ── 9. CHIP BUTTONS — spring bounce ───────────────────────── */
+.chip-polish {
+  transition: border-color 0.15s, background 0.15s, color 0.15s,
+              transform 0.2s cubic-bezier(0.2,0.8,0.2,1) !important;
+}
+.chip-polish:hover {
+  transform: translateY(-2px) !important;
+}
+.chip-polish:active {
+  transform: scale(0.96) !important;
+}
+
+/* ── 10. CATEGORY ICONS — float hover ───────────────────────── */
+.cat-icon-polish {
+  transition: border-color 0.15s, background 0.15s,
+              transform 0.25s cubic-bezier(0.2,0.8,0.2,1),
+              box-shadow 0.2s !important;
+}
+.cat-icon-polish:hover {
+  transform: translateY(-4px) scale(1.08) !important;
+  box-shadow: 0 8px 18px rgba(232,99,28,0.18) !important;
+}
+
+/* ── 11. EYEBROW BADGE — shimmer animation ──────────────────── */
+.eyebrow {
   position: relative;
   overflow: hidden;
 }
-.hr-hero-wrap::after {
+.eyebrow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: hr-eyebrowShine 4s ease-in-out infinite 1.5s;
+  pointer-events: none;
+}
+@keyframes hr-eyebrowShine {
+  0%    { background-position: -200% center; opacity: 0; }
+  20%   { opacity: 1; }
+  100%  { background-position: 200% center; opacity: 0; }
+}
+
+/* ── 12. BOTTOM SHEET — already has slideUp, enhance shadow ── */
+.bottom-sheet {
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18) !important;
+}
+
+/* ── 13. BUTTONS — ripple-ready + consistent hover ──────────── */
+button {
+  position: relative;
+  overflow: hidden;
+}
+/* Accent buttons glow */
+[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
+  transition: opacity 0.15s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1),
+              box-shadow 0.2s !important;
+  box-shadow: 0 4px 12px rgba(232,99,28,0.3) !important;
+}
+[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):hover {
+  box-shadow: 0 6px 20px rgba(232,99,28,0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── 14. ROOM CARDS — hover lift ────────────────────────────── */
+[class*="border rounded-\\[var\\(--r-md\\)\\] overflow-hidden cursor-pointer"] {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1) !important;
+}
+[class*="border rounded-\\[var\\(--r-md\\)\\] overflow-hidden cursor-pointer"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(232,99,28,0.14) !important;
+}
+
+/* ── 15. COMPARE TABLE — row hover ──────────────────────────── */
+table tbody tr:hover td,
+table tbody tr:hover th {
+  background: var(--accent-dim) !important;
+  transition: background 0.15s !important;
+}
+
+/* ── 16. ACCOUNT PAGE — fix broken toggle + item hover ──────── */
+.toggle-pill {
+  transition: background-color 0.2s !important;
+}
+[class*="flex items-center gap-3.5 px-4 py-3.5 cursor-pointer"] {
+  transition: background 0.15s !important;
+}
+
+/* ── 17. FOOTER LINKS — slide on hover ──────────────────────── */
+.footer-link {
+  transition: color 0.15s, transform 0.15s !important;
+}
+.footer-link:hover {
+  transform: translateX(3px) !important;
+}
+.footer-social-btn {
+  transition: transform 0.2s cubic-bezier(0.2,0.8,0.2,1), opacity 0.15s !important;
+}
+.footer-social-btn:hover {
+  transform: scale(1.15) translateY(-2px) !important;
+}
+
+/* ── 18. NAVBAR — scroll glow class ─────────────────────────── */
+header[class*="sticky"] {
+  transition: box-shadow 0.3s ease !important;
+}
+
+/* ── 19. HERO SECTION — scan line effect ────────────────────── */
+[class*="relative px-4 py-8"] {
+  position: relative;
+  overflow: hidden;
+}
+[class*="relative px-4 py-8"]::after {
   content: '';
   position: absolute;
   left: 0; right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  box-shadow: 0 0 18px var(--accent), 0 0 40px rgba(232,99,28,0.3);
-  animation: hr-scanLine 7s ease-in-out infinite;
+  box-shadow: 0 0 16px rgba(232,99,28,0.4);
+  animation: hr-scanLine 8s ease-in-out infinite;
   pointer-events: none;
-  z-index: 5;
+  z-index: 2;
+  opacity: 0.7;
+}
+@keyframes hr-scanLine {
+  0%   { top: -2px; opacity: 0; }
+  5%   { opacity: 0.7; }
+  95%  { opacity: 0.7; }
+  100% { top: 100%; opacity: 0; }
 }
 
-/* Morphing background blobs */
-.hr-blob {
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
-  animation: hr-morphBlob 14s ease-in-out infinite;
-}
-.hr-blob-1 {
-  width: 420px; height: 420px;
-  background: radial-gradient(circle, rgba(232,99,28,0.09) 0%, transparent 70%);
-  top: -80px; left: -80px;
-  animation-duration: 16s;
-}
-.hr-blob-2 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(232,99,28,0.06) 0%, transparent 70%);
-  bottom: -60px; right: -60px;
-  animation-duration: 11s;
-  animation-direction: reverse;
+/* ── 20. TOAST — already works, just add shadow ─────────────── */
+.animate-toast {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
 }
 
-/* Orbit particles */
-.hr-orbit-wrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 0;
+/* ── 21. THEME: NIGHT MODE adjustments ──────────────────────── */
+html[data-theme="night"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
+  box-shadow: 0 4px 12px rgba(255,122,61,0.35) !important;
 }
-.hr-orbit-dot {
-  position: absolute;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 10px rgba(232,99,28,0.6);
-  animation: hr-orbitA 22s linear infinite;
-}
-.hr-orbit-dot:nth-child(2) {
-  animation: hr-orbitB 15s linear infinite;
-  background: var(--good);
-  box-shadow: 0 0 10px rgba(13,122,74,0.5);
-  animation-delay: -4s;
-}
-.hr-orbit-dot:nth-child(3) {
-  animation: hr-orbitA 30s linear infinite reverse;
-  opacity: 0.5;
-  animation-delay: -9s;
+html[data-theme="night"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):hover {
+  box-shadow: 0 6px 22px rgba(255,122,61,0.5) !important;
 }
 
-/* ── EYEBROW / TITLE ANIMATIONS ────────────────────────────── */
-.hr-anim-eyebrow {
-  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
-  position: relative;
-  overflow: hidden;
-}
-/* Animated shine across eyebrow badge */
-.hr-anim-eyebrow::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 55%, transparent 70%);
-  background-size: 200% 100%;
-  animation: hr-eyebrowShine 3.5s ease-in-out infinite 1s;
-  pointer-events: none;
+/* ── 22. EMERALD THEME adjustments ──────────────────────────── */
+html[data-theme="emerald"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
+  box-shadow: 0 4px 12px rgba(13,122,74,0.35) !important;
 }
 
-.hr-anim-h1 {
-  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.12s both;
-  background: linear-gradient(130deg, var(--ink) 0%, var(--accent) 50%, var(--ink) 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation-name: hr-slideUp, hr-gradientShift;
-  animation-duration: 0.55s, 7s;
-  animation-delay: 0.12s, 1s;
-  animation-timing-function: cubic-bezier(0.16,1,0.3,1), ease;
-  animation-fill-mode: both, none;
-  animation-iteration-count: 1, infinite;
+/* ── 23. INDIGO THEME adjustments ───────────────────────────── */
+html[data-theme="indigo"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
+  box-shadow: 0 4px 12px rgba(79,70,229,0.35) !important;
 }
 
-.hr-anim-sub {
-  animation: hr-slideUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.22s both;
+/* ── 24. SCROLL PERFORMANCE — prevent repaints ──────────────── */
+/* Disable expensive animations when user is scrolling fast     */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* ── NAVBAR ENHANCEMENTS ────────────────────────────────────── */
-.hr-nav-enhanced {
-  transition: box-shadow 0.4s ease, background 0.3s ease !important;
-}
-.hr-nav-enhanced.scrolled {
-  box-shadow: 0 4px 20px rgba(232,99,28,0.12), 0 1px 0 var(--line) !important;
-}
-/* Nav brand icon float */
-.hr-nav-brand-icon {
-  display: inline-block;
-  animation: hr-floatY 3.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 6px rgba(232,99,28,0.4));
+/* Lightweight contain for offscreen cards */
+.group.relative.flex.flex-col.overflow-hidden {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 380px;
 }
 
-/* ── HOTEL CARD ─────────────────────────────────────────────── */
-
-/* 3D card entrance (applied via JS on scroll reveal) */
-.hr-card-hidden {
-  opacity: 0;
-  transform: perspective(700px) rotateY(-8deg) translateY(28px) scale(0.96);
+/* ── 25. HIDE "Stay type" display in browser title bar ──────── */
+/* The <title> tag shows "HotelRadar 3D" — already fine         */
+/* This hides duplicate "hotel" type pill in card body          */
+/* Selector: the pill just below the hotel name in card body    */
+[class*="text-\\[9\\.5px\\]"][class*="font-black"][class*="uppercase"][class*="text-\\[var\\(--accent\\)\\]"][class*="px-2"][class*="bg-\\[var\\(--accent-dim\\)\\]"] {
+  display: none !important;
 }
-.hr-card-visible {
-  animation: hr-cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
-}
-
-/* Hover enhancement — border glow ring */
-.group.hr-card-init {
-  position: relative;
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition:
-    transform 0.35s cubic-bezier(0.2,0.8,0.2,1),
-    box-shadow 0.35s ease,
-    border-color 0.3s ease !important;
-}
-.group.hr-card-init:hover {
-  box-shadow:
-    0 20px 50px rgba(0,0,0,0.14),
-    0 0 0 1px rgba(232,99,28,0.3),
-    0 0 28px rgba(232,99,28,0.1) !important;
-}
-
-/* Shine sweep on card image hover */
-.hr-card-img-wrap {
-  position: relative;
-  overflow: hidden;
-}
-.hr-card-img-wrap::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 55%; height: 100%;
-  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 55%, transparent 75%);
-  transition: left 0.65s ease;
-  z-index: 8;
-  pointer-events: none;
-}
-.group:hover .hr-card-img-wrap::after {
-  left: 160%;
-}
-
-/* Image zoom on hover */
-.hr-img-zoom {
-  transition: transform 0.6s cubic-bezier(0.2,0.8,0.2,1) !important;
-}
-.group:hover .hr-img-zoom {
-  transform: scale(1.07) !important;
-}
-
-/* Glare overlay */
-.hr-glare {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 4;
-  background: radial-gradient(
-    circle at var(--gx, 50%) var(--gy, 50%),
-    rgba(255,255,255,0.14) 0%,
-    transparent 65%
-  );
-  opacity: var(--go, 0);
-  transition: opacity 0.3s;
-}
-
-/* ── BADGE GLOW ─────────────────────────────────────────────── */
-.hr-badge-verified {
-  animation: hr-glowPulse 3s ease-in-out infinite !important;
-  box-shadow: 0 0 10px rgba(13,122,74,0.45), 0 2px 6px rgba(0,0,0,0.15) !important;
-}
-.hr-badge-featured {
-  animation: hr-glowPulse 2.5s ease-in-out infinite 0.5s !important;
-  box-shadow: 0 0 12px rgba(232,99,28,0.5), 0 2px 6px rgba(0,0,0,0.15) !important;
-}
-@keyframes hr-glowPulse {
-  0%,100% { box-shadow: 0 0 8px rgba(232,99,28,0.2); }
-  50%      { box-shadow: 0 0 18px rgba(232,99,28,0.5); }
-}
-
-/* ── SEARCH BOX ─────────────────────────────────────────────── */
-.search-box-polish {
-  transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s !important;
-}
-.search-box-polish:hover,
-.search-box-polish:focus-within {
-  transform: translateY(-2px) !important;
-  box-shadow:
-    0 12px 30px rgba(0,0,0,0.1),
-    0 0 0 2px rgba(232,99,28,0.15) !important;
-}
-
-/* Search button shimmer */
-.search-btn-polish {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(232,99,28,0.35) !important;
-  transition: opacity 0.15s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
-}
-.search-btn-polish::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -80%;
-  width: 45%; height: 100%;
-  background: rgba(255,255,255,0.25);
-  transform: skewX(-20deg);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-.search-btn-polish:hover {
-  opacity: 1 !important;
-  transform: scale(1.03) translateY(-1px) !important;
-  box-shadow: 0 8px 22px rgba(232,99,28,0.5) !important;
-}
-.search-btn-polish:hover::before {
-  left: 130%;
-}
-.search-btn-polish:active {
-  transform: scale(0.97) !important;
-}
-
-/* ── CHIP FILTER PILLS ──────────────────────────────────────── */
-.chip-polish {
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
-}
-.chip-polish:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 6px 16px rgba(232,99,28,0.18) !important;
-}
-.chip-polish:active {
-  transform: translateY(0) scale(0.97) !important;
-}
-
-/* ── STAT ITEMS ─────────────────────────────────────────────── */
-.stat-item-polish {
-  transition: background 0.25s, transform 0.3s cubic-bezier(0.2,0.8,0.2,1) !important;
-  cursor: default;
-}
-.stat-item-polish:hover {
-  background: var(--accent-dim) !important;
-  transform: translateY(-4px) scale(1.04) !important;
-}
-.stat-val-polish {
-  transition: transform 0.3s, text-shadow 0.3s !important;
-  text-shadow: 0 0 16px rgba(232,99,28,0.2);
-}
-.stat-item-polish:hover .stat-val-polish {
-  transform: scale(1.12) !important;
-  text-shadow: 0 0 22px rgba(232,99,28,0.45) !important;
-}
-
-/* ── CATEGORY ICONS ─────────────────────────────────────────── */
-.cat-icon-polish {
-  transition: border-color 0.2s, background-color 0.2s, transform 0.3s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.2s !important;
-}
-.cat-icon-polish:hover {
-  transform: translateY(-5px) scale(1.1) !important;
-  box-shadow: 0 10px 22px rgba(232,99,28,0.18) !important;
-}
-
-/* ── BOTTOM SHEET / MODAL ───────────────────────────────────── */
-.bottom-sheet {
-  animation: hr-slideUp 0.28s cubic-bezier(0.32,0.72,0,1) forwards !important;
-}
-
-/* ── STICKY FILTER BAR ──────────────────────────────────────── */
-.hr-filter-bar {
-  transition: box-shadow 0.3s !important;
-}
-.hr-filter-bar.elevated {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px var(--line) !important;
-}
-
-/* ── RIPPLE ─────────────────────────────────────────────────── */
-.hr-ripple-wave {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.28);
-  transform: scale(0);
-  animation: hr-ripple 0.55s linear forwards;
-  pointer-events: none;
-  z-index: 20;
-}
-
-/* ── SCROLL REVEAL CLASSES ──────────────────────────────────── */
-.hr-reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
-}
-.hr-reveal.hr-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── FOOTER LINKS ───────────────────────────────────────────── */
-.footer-link {
-  transition: color 0.2s, transform 0.2s !important;
-}
-.footer-link:hover {
-  transform: translateX(3px) !important;
-}
-
-/* Footer social icons */
-.footer-social-btn {
-  transition: transform 0.2s cubic-bezier(0.2,0.8,0.2,1), opacity 0.2s, box-shadow 0.2s !important;
-}
-.footer-social-btn:hover {
-  transform: scale(1.18) translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
-}
-
-/* ── THREE.JS GLOBE CANVAS ──────────────────────────────────── */
-#hr-three-canvas-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.85;
-}
-#hr-three-canvas-wrap canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* ── THEME: NIGHT ───────────────────────────────────────────── */
-html[data-theme="night"] .hr-anim-h1 {
-  background: linear-gradient(130deg, var(--ink) 0%, #ff7a3d 50%, var(--ink) 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-html[data-theme="emerald"] .hr-anim-h1 {
-  background: linear-gradient(130deg, var(--ink) 0%, #0d7a4a 50%, var(--ink) 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-html[data-theme="indigo"] .hr-anim-h1 {
-  background: linear-gradient(130deg, var(--ink) 0%, #4f46e5 50%, var(--ink) 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Also hide the "(basic tier)" span next to it */
+[class*="text-\\[9px\\]"][class*="font-bold"][class*="text-\\[var\\(--ink-faint\\)\\]"] {
+  display: none !important;
 }
