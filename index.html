@@ -4,25 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>HotelRadar — India's Trusted Hotel Directory</title>
-    <meta name="description" content="Find verified hotels, resorts, and ashrams across India. Direct desk pricing, zero booking fees." />
+    <meta name="description" content="Find verified hotels, resorts, ashrams across India. Direct desk pricing. Zero booking fees." />
+
+    <!-- Preconnect to font servers -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Load only weights actually used -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700..900;1,9..144,700..900&family=Inter:wght@400;500;600;700;800&display=swap&display=swap" rel="stylesheet">
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
 
-    <!-- Animations CSS — loads before React so no flash -->
+    <!--
+      animations.css MUST be first — before app.css.
+      This ensures backdrop-blur is killed before Tailwind applies it,
+      and the auth modal styles are ready before React renders.
+    -->
     <link rel="stylesheet" href="./animations.css">
-
-    <!-- Real site CSS (Tailwind + custom) -->
     <link rel="stylesheet" crossorigin href="./app.css">
   </head>
   <body>
     <div id="root"></div>
-
-    <!-- React app bundle -->
     <script type="module" crossorigin src="./app.js"></script>
-
-    <!-- Lightweight animation fixes — defer so it doesn't block React -->
+    <!--
+      animations.js is deferred and tiny (4KB).
+      It runs AFTER React mounts — never blocks render.
+    -->
     <script src="./animations.js" defer></script>
   </body>
 </html>

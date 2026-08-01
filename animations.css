@@ -1,149 +1,374 @@
 /* ============================================================
-   HotelRadar — animations.css  v2.0
-   Targets real site's existing Tailwind classes.
-   NO Three.js, NO heavy JS — pure CSS only for performance.
-   All fixes: no load delay, no scroll lag, no direct-call,
-   "Stay Niche" badge hidden, double name fix, scroll perf.
+   HotelRadar — animations.css  v3.0 (PERFORMANCE EDITION)
+   Goal: Silky 60fps scroll + beautiful UI fixes
+   Strategy: GPU-only animations, kill backdrop-blur lag,
+   fix auth modal, fix stay-type double display,
+   remove direct call, keep scroll butter-smooth.
    ============================================================ */
 
-/* ── 1. FIX: IMMEDIATE PAGE LOAD — no 2-second blank flash ── */
-/* The site uses .animate-fade-in which fades from opacity:0   */
-/* Force it to run faster and start immediately                 */
-.animate-fade-in {
-  animation-duration: 0.15s !important;
-  animation-delay: 0s !important;
+/* ══════════════════════════════════════════════════════════════
+   SECTION 1 — KILL SCROLL LAG (most important)
+   backdrop-blur is the #1 cause of scroll lag on mobile.
+   We replace it with a solid semi-transparent bg instead.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Kill ALL backdrop-blur — replace with solid bg for performance */
+.backdrop-blur-xs,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+[class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
-/* ── 2. FIX: "STAY NICHE" DOUBLE INFO — hide the badge ─────── */
-/* In hotel card: "Stay Niche: hotel (basic tier)" is redundant */
-/* The hotel type is already shown in the card area section     */
-/* Target: the span with text "Stay Niche:" inside card body    */
-[class*="mb-2.5"].flex.items-center.gap-1 {
-  display: none !important;
+/* Compensate — give overlays a solid semi-transparent bg instead */
+.backdrop-blur-xs { background-color: rgba(0,0,0,0.55) !important; }
+.backdrop-blur-sm { background-color: rgba(0,0,0,0.62) !important; }
+.backdrop-blur-md { background-color: rgba(0,0,0,0.68) !important; }
+
+/* For nav pills / card buttons that used backdrop-blur-md */
+[class*="backdrop-blur-md"][class*="bg-black"] {
+  background-color: rgba(0,0,0,0.72) !important;
+}
+[class*="backdrop-blur-xs"][class*="bg-black"] {
+  background-color: rgba(0,0,0,0.58) !important;
 }
 
-/* ── 3. FIX: REMOVE DIRECT CALL BUTTON ─────────────────────── */
-/* In compare modal: "Call Direct" button with phone icon       */
-/* Hide all tel: anchor links and call buttons in compare table */
-a[href^="tel:"],
-button[onclick*="tel:"],
-[class*="Call Direct"],
-td button[class*="accent"]:has(svg) {
-  display: none !important;
+/* GPU-accelerate the main scroll container */
+html {
+  scroll-behavior: smooth;
 }
-
-/* ── 4. FIX: SCROLL LAG — GPU-accelerate scrollable areas ──── */
-/* Force GPU compositing on main scroll container               */
 body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none;
+  /* Prevent layout recalculation on scroll */
+  isolation: isolate;
 }
 
-/* Prevent layout thrash on scroll */
+/* GPU promote key layers so scroll doesn't cause repaints */
 header,
-.sticky,
-[class*="sticky"] {
+[class*="sticky top-0"] {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* Reduce paint cost on hotel card grid */
-[class*="grid-cols"] {
-  contain: layout style;
+/* Contain hotel card grid to prevent full-page repaints */
+[class*="grid-cols-1"][class*="gap-6"],
+[class*="grid-cols-1"][class*="gap-4"] {
+  contain: layout;
 }
 
-/* Optimize images and gradient backgrounds */
-[class*="aspect-16"] {
-  contain: strict;
-  will-change: transform;
+/* Each card: promote to its own compositor layer */
+[class*="group relative flex flex-col overflow-hidden"] {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Virtual scrolling hint */
+  content-visibility: auto;
+  contain-intrinsic-size: 0 360px;
 }
 
-/* ── 5. HOTEL CARD — smooth hover, no tilt (perf-safe) ─────── */
-/* Simple CSS-only card hover — no JS tilt to cause lag         */
-.group.relative.flex.flex-col.overflow-hidden {
-  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
-  transform-origin: center;
+/* Scrollable row containers */
+[class*="overflow-x-auto"],
+[class*="no-scrollbar"] {
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
 }
-.group.relative.flex.flex-col.overflow-hidden:hover {
-  transform: translateY(-3px) !important;
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 2 — LOAD FLASH FIX
+   Make animate-fade-in nearly instant so no blank flash
+   ══════════════════════════════════════════════════════════════ */
+.animate-fade-in {
+  animation-duration: 0.12s !important;
+  animation-delay: 0s !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 3 — AUTH MODAL (Login / Signup) REDESIGN
+   Target: .fixed.inset-0.z-[60] and its child panel
+   ══════════════════════════════════════════════════════════════ */
+
+/* Overlay */
+.fixed.inset-0.z-\[60\] {
+  background: rgba(15,14,20,0.75) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Modal panel */
+.fixed.inset-0.z-\[60\] > .relative.w-full.max-w-sm {
+  background: var(--card) !important;
+  border-radius: 24px !important;
+  border: 1px solid var(--line) !important;
   box-shadow:
-    0 12px 28px rgba(0,0,0,0.12),
-    0 0 0 1px rgba(232,99,28,0.2) !important;
+    0 0 0 1px rgba(232,99,28,0.08),
+    0 24px 64px rgba(0,0,0,0.22),
+    0 8px 24px rgba(0,0,0,0.12) !important;
+  animation: hr-modalIn 0.28s cubic-bezier(0.16,1,0.3,1) forwards !important;
+  overflow: hidden;
+  max-height: 92vh;
+  overflow-y: auto;
 }
 
-/* Image zoom on card hover */
-.group:hover [class*="aspect-16"] > div[style] {
-  transform: scale(1.04) !important;
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+@keyframes hr-modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-/* ── 6. BADGE GLOW ─────────────────────────────────────────── */
-/* Verified badge */
-[class*="bg-emerald-500"][class*="text-white"][class*="text-\\[9\\.5px\\]"],
-[class*="bg-emerald-500"][class*="tracking-wide"][class*="uppercase"] {
-  box-shadow: 0 0 10px rgba(13,122,74,0.4) !important;
-  animation: hr-badgeGlow 3s ease-in-out infinite !important;
+/* Auth header section */
+.fixed.inset-0.z-\[60\] [class*="px-5 pt-5 pb-4 border-b"] {
+  background: linear-gradient(to bottom, var(--accent-dim), var(--card)) !important;
+  padding: 24px 24px 18px !important;
 }
 
-/* Featured badge */
-[class*="bg-amber-500"][class*="text-white"][class*="tracking-wide"] {
-  box-shadow: 0 0 10px rgba(245,158,11,0.5) !important;
+/* Auth title */
+.fixed.inset-0.z-\[60\] h2[class*="font-serif"] {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--ink) !important;
 }
 
-@keyframes hr-badgeGlow {
-  0%,100% { box-shadow: 0 0 8px rgba(13,122,74,0.3); }
-  50%      { box-shadow: 0 0 16px rgba(13,122,74,0.55); }
+/* Auth subtitle */
+.fixed.inset-0.z-\[60\] p[class*="text-\\[11px\\]"] {
+  color: var(--ink-soft) !important;
+  margin-top: 3px !important;
 }
 
-/* ── 7. SEARCH BOX — enhanced focus glow ───────────────────── */
-.search-box-polish:focus-within {
-  box-shadow: 0 0 0 2px rgba(232,99,28,0.2), var(--sh-3) !important;
+/* Google button — prominent */
+.fixed.inset-0.z-\[60\] [class*="py-2.5"][class*="bg-\\[var\\(--card\\)\\]"][class*="border"] {
+  border: 1.5px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+.fixed.inset-0.z-\[60\] [class*="py-2.5"][class*="bg-\\[var\\(--card\\)\\]"][class*="border"]:hover {
+  background: var(--paper-dim) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Tab switcher (Login / Register) */
+.fixed.inset-0.z-\[60\] [class*="flex bg-\\[var\\(--paper-dim\\)\\] rounded"] {
+  border-radius: 12px !important;
+  padding: 4px !important;
+  background: var(--paper-dim) !important;
+  border: 1px solid var(--line) !important;
+}
+.fixed.inset-0.z-\[60\] [class*="flex-1 py-1.5 text-xs font-bold rounded"] {
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s !important;
+}
+/* Active tab */
+.fixed.inset-0.z-\[60\] .bg-\[var\(--card\)\].text-\[var\(--ink\)\].shadow-\[var\(--sh-1\)\] {
+  background: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(232,99,28,0.35) !important;
+}
+
+/* Input fields */
+.fixed.inset-0.z-\[60\] input[type="email"],
+.fixed.inset-0.z-\[60\] input[type="password"],
+.fixed.inset-0.z-\[60\] input[type="text"] {
+  border-radius: 10px !important;
+  border: 1.5px solid var(--line) !important;
+  background: var(--paper-dim) !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+.fixed.inset-0.z-\[60\] input:focus {
   border-color: var(--accent) !important;
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(232,99,28,0.12) !important;
+  outline: none !important;
 }
 
-/* ── 8. STAT ITEMS — hover lift ─────────────────────────────── */
+/* Submit / Login / Register button */
+.fixed.inset-0.z-\[60\] [class*="py-2.5 bg-\\[var\\(--accent\\)\\]"] {
+  padding: 13px !important;
+  border-radius: 12px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 85%, #f97316)) !important;
+  box-shadow: 0 4px 14px rgba(232,99,28,0.4) !important;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.1s !important;
+}
+.fixed.inset-0.z-\[60\] [class*="py-2.5 bg-\\[var\\(--accent\\)\\]"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 22px rgba(232,99,28,0.5) !important;
+}
+
+/* Error box */
+.fixed.inset-0.z-\[60\] [class*="bg-red-50 border border-red-200"] {
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+/* Close button */
+.fixed.inset-0.z-\[60\] [class*="w-8 h-8"][class*="rounded-full"][class*="bg-\\[var\\(--paper-dim\\)\\]"] {
+  transition: background 0.15s, transform 0.15s !important;
+}
+.fixed.inset-0.z-\[60\] [class*="w-8 h-8"][class*="rounded-full"][class*="bg-\\[var\\(--paper-dim\\)\\]"]:hover {
+  background: var(--line) !important;
+  transform: scale(1.08) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 4 — HIDE DIRECT CALL BUTTON
+   In compare modal — target the last row "Contact Desk Now"
+   ══════════════════════════════════════════════════════════════ */
+/* Hide "Call Direct" buttons everywhere */
+a[href^="tel:"] { display: none !important; }
+
+/* In compare table — hide the entire "Contact Desk Now" row */
+table tr:last-child td button[class*="bg-\\[var\\(--accent\\)\\]"] {
+  display: none !important;
+}
+table tr:last-child td {
+  padding: 8px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 5 — HIDE DOUBLE "STAY NICHE" BADGE IN CARD
+   ══════════════════════════════════════════════════════════════ */
+/* Target the flex row containing "Stay Niche:" text in card body */
+[class*="mb-2.5"][class*="flex"][class*="items-center"][class*="gap-1"] {
+  display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 6 — CARD HOVER (CSS only, no JS tilt = no lag)
+   ══════════════════════════════════════════════════════════════ */
+[class*="group relative flex flex-col overflow-hidden"] {
+  transition:
+    box-shadow 0.22s ease,
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+@media (hover: hover) {
+  [class*="group relative flex flex-col overflow-hidden"]:hover {
+    transform: translateY(-4px) translateZ(0) !important;
+    box-shadow:
+      0 14px 32px rgba(0,0,0,0.13),
+      0 0 0 1px rgba(232,99,28,0.18) !important;
+  }
+}
+
+/* Image zoom on hover — CSS only */
+[class*="group relative flex flex-col"]:hover [class*="aspect-16\\/10"] {
+  transform: scale(1.04);
+  transition: transform 0.5s cubic-bezier(0.2,0.8,0.2,1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 7 — BUTTON ENHANCEMENTS
+   ══════════════════════════════════════════════════════════════ */
+/* All accent buttons */
+[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):not(.fixed *) {
+  transition: opacity 0.12s, transform 0.18s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.18s !important;
+  box-shadow: 0 3px 10px rgba(232,99,28,0.28) !important;
+}
+@media (hover: hover) {
+  [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):not(.fixed *):hover {
+    box-shadow: 0 6px 18px rgba(232,99,28,0.42) !important;
+    transform: translateY(-1px) translateZ(0) !important;
+  }
+}
+[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):active {
+  transform: scale(0.97) translateZ(0) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 8 — HERO SCAN LINE
+   ══════════════════════════════════════════════════════════════ */
+[class*="relative px-4 py-8"] {
+  position: relative;
+  overflow: hidden;
+}
+[class*="relative px-4 py-8"]::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: -2px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  box-shadow: 0 0 14px rgba(232,99,28,0.5);
+  animation: hr-scan 9s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  will-change: top;
+}
+@keyframes hr-scan {
+  0%   { top: -2px; opacity: 0; }
+  4%   { opacity: 0.8; }
+  96%  { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 9 — STAT ITEMS HOVER
+   ══════════════════════════════════════════════════════════════ */
 .stat-item-polish {
-  transition: background-color 0.2s, transform 0.25s cubic-bezier(0.2,0.8,0.2,1) !important;
+  transition: background 0.18s, transform 0.22s cubic-bezier(0.2,0.8,0.2,1) !important;
   cursor: default;
 }
-.stat-item-polish:hover {
-  background: var(--accent-dim) !important;
-  transform: translateY(-3px) scale(1.04) !important;
-}
-.stat-item-polish:hover .stat-val-polish {
-  transform: scale(1.1);
-  text-shadow: 0 0 18px rgba(232,99,28,0.4);
+@media (hover: hover) {
+  .stat-item-polish:hover {
+    background: var(--accent-dim) !important;
+    transform: translateY(-3px) scale(1.03) translateZ(0) !important;
+  }
+  .stat-item-polish:hover .stat-val-polish {
+    transform: scale(1.1) !important;
+  }
 }
 .stat-val-polish {
-  transition: transform 0.25s, text-shadow 0.25s !important;
+  transition: transform 0.22s ease !important;
 }
 
-/* ── 9. CHIP BUTTONS — spring bounce ───────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   SECTION 10 — CHIP PILLS
+   ══════════════════════════════════════════════════════════════ */
 .chip-polish {
-  transition: border-color 0.15s, background 0.15s, color 0.15s,
-              transform 0.2s cubic-bezier(0.2,0.8,0.2,1) !important;
+  transition: border-color 0.12s, background 0.12s, color 0.12s,
+              transform 0.18s cubic-bezier(0.2,0.8,0.2,1) !important;
 }
-.chip-polish:hover {
-  transform: translateY(-2px) !important;
+@media (hover: hover) {
+  .chip-polish:hover { transform: translateY(-2px) translateZ(0) !important; }
 }
-.chip-polish:active {
-  transform: scale(0.96) !important;
-}
+.chip-polish:active { transform: scale(0.95) translateZ(0) !important; }
 
-/* ── 10. CATEGORY ICONS — float hover ───────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   SECTION 11 — CATEGORY ICONS
+   ══════════════════════════════════════════════════════════════ */
 .cat-icon-polish {
-  transition: border-color 0.15s, background 0.15s,
-              transform 0.25s cubic-bezier(0.2,0.8,0.2,1),
-              box-shadow 0.2s !important;
+  transition: border-color 0.12s, background 0.12s,
+              transform 0.22s cubic-bezier(0.2,0.8,0.2,1),
+              box-shadow 0.18s !important;
 }
-.cat-icon-polish:hover {
-  transform: translateY(-4px) scale(1.08) !important;
-  box-shadow: 0 8px 18px rgba(232,99,28,0.18) !important;
+@media (hover: hover) {
+  .cat-icon-polish:hover {
+    transform: translateY(-4px) scale(1.08) translateZ(0) !important;
+    box-shadow: 0 8px 18px rgba(232,99,28,0.2) !important;
+  }
 }
 
-/* ── 11. EYEBROW BADGE — shimmer animation ──────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   SECTION 12 — EYEBROW SHIMMER
+   ══════════════════════════════════════════════════════════════ */
 .eyebrow {
   position: relative;
   overflow: hidden;
@@ -153,152 +378,68 @@ header,
   position: absolute;
   inset: 0;
   background: linear-gradient(105deg,
-    transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
+    transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%);
   background-size: 200% 100%;
-  animation: hr-eyebrowShine 4s ease-in-out infinite 1.5s;
+  animation: hr-shine 4.5s ease-in-out infinite 2s;
   pointer-events: none;
 }
-@keyframes hr-eyebrowShine {
-  0%    { background-position: -200% center; opacity: 0; }
-  20%   { opacity: 1; }
-  100%  { background-position: 200% center; opacity: 0; }
+@keyframes hr-shine {
+  0%,100% { background-position: -200% center; opacity: 0; }
+  15%      { opacity: 1; }
+  85%      { opacity: 0; }
+  50%      { background-position: 200% center; }
 }
 
-/* ── 12. BOTTOM SHEET — already has slideUp, enhance shadow ── */
-.bottom-sheet {
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.18) !important;
+/* ══════════════════════════════════════════════════════════════
+   SECTION 13 — SEARCH BOX FOCUS GLOW
+   ══════════════════════════════════════════════════════════════ */
+.search-box-polish {
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s !important;
 }
-
-/* ── 13. BUTTONS — ripple-ready + consistent hover ──────────── */
-button {
-  position: relative;
-  overflow: hidden;
-}
-/* Accent buttons glow */
-[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
-  transition: opacity 0.15s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1),
-              box-shadow 0.2s !important;
-  box-shadow: 0 4px 12px rgba(232,99,28,0.3) !important;
-}
-[class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):hover {
-  box-shadow: 0 6px 20px rgba(232,99,28,0.45) !important;
+.search-box-polish:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(232,99,28,0.14), var(--sh-3) !important;
   transform: translateY(-1px) !important;
 }
 
-/* ── 14. ROOM CARDS — hover lift ────────────────────────────── */
-[class*="border rounded-\\[var\\(--r-md\\)\\] overflow-hidden cursor-pointer"] {
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s cubic-bezier(0.2,0.8,0.2,1) !important;
-}
-[class*="border rounded-\\[var\\(--r-md\\)\\] overflow-hidden cursor-pointer"]:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 20px rgba(232,99,28,0.14) !important;
+/* ══════════════════════════════════════════════════════════════
+   SECTION 14 — BOTTOM SHEET SHADOW
+   ══════════════════════════════════════════════════════════════ */
+.bottom-sheet {
+  box-shadow: 0 -6px 32px rgba(0,0,0,0.16) !important;
 }
 
-/* ── 15. COMPARE TABLE — row hover ──────────────────────────── */
-table tbody tr:hover td,
-table tbody tr:hover th {
-  background: var(--accent-dim) !important;
-  transition: background 0.15s !important;
+/* ══════════════════════════════════════════════════════════════
+   SECTION 15 — NAVBAR SCROLL SHADOW (via JS class toggle)
+   ══════════════════════════════════════════════════════════════ */
+header.hr-scrolled {
+  box-shadow: 0 2px 20px rgba(232,99,28,0.1), 0 1px 0 var(--line) !important;
 }
 
-/* ── 16. ACCOUNT PAGE — fix broken toggle + item hover ──────── */
-.toggle-pill {
-  transition: background-color 0.2s !important;
+/* ══════════════════════════════════════════════════════════════
+   SECTION 16 — NIGHT / EMERALD / INDIGO THEME ADJUSTMENTS
+   ══════════════════════════════════════════════════════════════ */
+html[data-theme="night"] .fixed.inset-0.z-\[60\] > .relative.w-full.max-w-sm {
+  box-shadow:
+    0 0 0 1px rgba(255,122,61,0.12),
+    0 24px 64px rgba(0,0,0,0.5) !important;
 }
-[class*="flex items-center gap-3.5 px-4 py-3.5 cursor-pointer"] {
-  transition: background 0.15s !important;
-}
-
-/* ── 17. FOOTER LINKS — slide on hover ──────────────────────── */
-.footer-link {
-  transition: color 0.15s, transform 0.15s !important;
-}
-.footer-link:hover {
-  transform: translateX(3px) !important;
-}
-.footer-social-btn {
-  transition: transform 0.2s cubic-bezier(0.2,0.8,0.2,1), opacity 0.15s !important;
-}
-.footer-social-btn:hover {
-  transform: scale(1.15) translateY(-2px) !important;
-}
-
-/* ── 18. NAVBAR — scroll glow class ─────────────────────────── */
-header[class*="sticky"] {
-  transition: box-shadow 0.3s ease !important;
-}
-
-/* ── 19. HERO SECTION — scan line effect ────────────────────── */
-[class*="relative px-4 py-8"] {
-  position: relative;
-  overflow: hidden;
-}
-[class*="relative px-4 py-8"]::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  box-shadow: 0 0 16px rgba(232,99,28,0.4);
-  animation: hr-scanLine 8s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.7;
-}
-@keyframes hr-scanLine {
-  0%   { top: -2px; opacity: 0; }
-  5%   { opacity: 0.7; }
-  95%  { opacity: 0.7; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* ── 20. TOAST — already works, just add shadow ─────────────── */
-.animate-toast {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
-}
-
-/* ── 21. THEME: NIGHT MODE adjustments ──────────────────────── */
 html[data-theme="night"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
-  box-shadow: 0 4px 12px rgba(255,122,61,0.35) !important;
+  box-shadow: 0 3px 10px rgba(255,122,61,0.32) !important;
 }
-html[data-theme="night"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]):hover {
-  box-shadow: 0 6px 22px rgba(255,122,61,0.5) !important;
-}
-
-/* ── 22. EMERALD THEME adjustments ──────────────────────────── */
 html[data-theme="emerald"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
-  box-shadow: 0 4px 12px rgba(13,122,74,0.35) !important;
+  box-shadow: 0 3px 10px rgba(13,122,74,0.32) !important;
 }
-
-/* ── 23. INDIGO THEME adjustments ───────────────────────────── */
 html[data-theme="indigo"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) {
-  box-shadow: 0 4px 12px rgba(79,70,229,0.35) !important;
+  box-shadow: 0 3px 10px rgba(79,70,229,0.32) !important;
 }
 
-/* ── 24. SCROLL PERFORMANCE — prevent repaints ──────────────── */
-/* Disable expensive animations when user is scrolling fast     */
+/* ══════════════════════════════════════════════════════════════
+   SECTION 17 — REDUCED MOTION RESPECT
+   ══════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Lightweight contain for offscreen cards */
-.group.relative.flex.flex-col.overflow-hidden {
-  contain: layout style;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 380px;
-}
-
-/* ── 25. HIDE "Stay type" display in browser title bar ──────── */
-/* The <title> tag shows "HotelRadar 3D" — already fine         */
-/* This hides duplicate "hotel" type pill in card body          */
-/* Selector: the pill just below the hotel name in card body    */
-[class*="text-\\[9\\.5px\\]"][class*="font-black"][class*="uppercase"][class*="text-\\[var\\(--accent\\)\\]"][class*="px-2"][class*="bg-\\[var\\(--accent-dim\\)\\]"] {
-  display: none !important;
-}
-/* Also hide the "(basic tier)" span next to it */
-[class*="text-\\[9px\\]"][class*="font-bold"][class*="text-\\[var\\(--ink-faint\\)\\]"] {
-  display: none !important;
 }
