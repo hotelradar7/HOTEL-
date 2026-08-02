@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="./animations.css">
     <link rel="stylesheet" crossorigin href="./app.css">
 
+    <!-- Firebase Compat SDK v10 CDNs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
     <script>
       // Fix: /index.html → / (remove index.html from URL bar)
       // If someone lands on /index.html, silently replace with /
@@ -24,6 +29,34 @@
           window.location.search + window.location.hash
         );
       }
+
+      // Restore SPA URL when redirected from 404.html (GitHub Pages SPA router trick)
+      (function() {
+        const params = new URLSearchParams(window.location.search);
+        const p = params.get('p');
+        if (p) {
+          const q = params.get('q');
+          let newUrl = window.location.pathname;
+          if (newUrl.endsWith('/')) {
+            newUrl = newUrl.slice(0, -1);
+          }
+          newUrl += '/' + p;
+          if (q) {
+            newUrl += '?' + q;
+          }
+          // Preserve other query parameters if any (except p and q)
+          params.delete('p');
+          params.delete('q');
+          const remaining = params.toString();
+          if (remaining) {
+            newUrl += (q ? '&' : '?') + remaining;
+          }
+          if (window.location.hash) {
+            newUrl += window.location.hash;
+          }
+          window.history.replaceState(null, '', newUrl);
+        }
+      })();
     </script>
   </head>
   <body>
