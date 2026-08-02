@@ -182,14 +182,15 @@ header,
   box-shadow: 0 2px 8px rgba(232,99,28,0.35) !important;
 }
 
-/* Input fields */
+/* Input fields — NO padding override! Icons use pl-9/pl-10 Tailwind classes.
+   Overriding padding breaks icon alignment (icon overlaps text). */
 .fixed.inset-0.z-\[60\] input[type="email"],
 .fixed.inset-0.z-\[60\] input[type="password"],
 .fixed.inset-0.z-\[60\] input[type="text"] {
   border-radius: 10px !important;
   border: 1.5px solid var(--line) !important;
   background: var(--paper-dim) !important;
-  padding: 11px 14px !important;
+  /* padding intentionally NOT set — Tailwind pl-9/pl-10 handles icon spacing */
   font-size: 14px !important;
   transition: border-color 0.15s, box-shadow 0.15s !important;
 }
@@ -442,4 +443,96 @@ html[data-theme="indigo"] [class*="bg-\\[var\\(--accent\\)\\]"]:not([disabled]) 
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 18 — HOME PAGE STICKY SEARCH BAR
+   When home page search bar scrolls off screen,
+   show a compact search bar in the nav area.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Floating sticky search pill — hidden by default */
+#hr-sticky-search {
+  position: fixed;
+  top: 60px; /* just below the 56px header */
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  z-index: 45;
+  width: calc(100% - 32px);
+  max-width: 480px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Visible state — added by JS */
+#hr-sticky-search.hr-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* The pill button inside */
+#hr-sticky-search-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.12),
+    0 1px 4px rgba(0,0,0,0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.15s;
+}
+
+#hr-sticky-search-btn:hover {
+  border-color: var(--accent);
+  box-shadow:
+    0 6px 22px rgba(0,0,0,0.15),
+    0 0 0 2px rgba(232,99,28,0.12);
+  transform: scale(1.01);
+}
+
+#hr-sticky-search-btn:active {
+  transform: scale(0.98);
+}
+
+.hr-sticky-icon {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.hr-sticky-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hr-sticky-kbd {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  background: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+/* Night theme */
+html[data-theme="night"] #hr-sticky-search-btn {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
 }
