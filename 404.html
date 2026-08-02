@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // GitHub Pages SPA redirect trick.
+    // When any URL is hit (e.g. hotelradar.qzz.io/hotels.html),
+    // GitHub serves this 404.html. We redirect to index.html
+    // preserving the full path as a query param so the React
+    // router can pick it up.
+    var l = window.location;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1).join('/') + '/?p=' +
+      l.pathname.slice(1) +
+      (l.search ? '&q=' + l.search.slice(1) : '') +
+      l.hash
+    );
+  </script>
+</head>
+<body></body>
+</html>
