@@ -66,21 +66,8 @@
 
   /* ── 3. DOM FIXES ─────────────────────────────────────────── */
   function applyFixes() {
-    /* Hide "Stay Niche:" badge in hotel cards */
-    var els = document.querySelectorAll('[class*="mb-2"]');
-    for (var i = 0; i < els.length; i++) {
-      if (els[i].textContent && els[i].textContent.indexOf('Stay Niche:') !== -1) {
-        els[i].style.display = 'none';
-      }
-    }
-    /* Remove "Call Direct" buttons */
-    var btns = document.querySelectorAll('button');
-    for (var j = 0; j < btns.length; j++) {
-      if ((btns[j].textContent || '').trim() === 'Call Direct') {
-        var td = btns[j].closest('td');
-        if (td) td.innerHTML = '<span style="font-size:11px;color:var(--ink-faint)">—</span>';
-      }
-    }
+    /* No-op: Optimized away to prevent layout thrashing and MutationObserver infinite loops.
+       Fixes are now applied natively in app.js. */
   }
 
   /* ── 4. HOME PAGE FLOATING SEARCH PILL ───────────────────── */
